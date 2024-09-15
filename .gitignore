@@ -1,0 +1,8 @@
+# Global ignores
+.vscode/
+.idea/
+.DS_Store
+*.log
+
+# Exclude environment files
+*.env
