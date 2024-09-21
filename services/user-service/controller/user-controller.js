@@ -10,7 +10,10 @@ import {
   findUserByUsernameOrEmail as _findUserByUsernameOrEmail,
   updateUserById as _updateUserById,
   updateUserPrivilegeById as _updateUserPrivilegeById,
+  findUserByEmail,
 } from "../model/repository.js";
+import { sendResetPasswordEmail as _sendResetPasswordEmail} from "../model/email-password.js"; 
+import jwt from 'jsonwebtoken';
 
 export async function createUser(req, res) {
   try {
@@ -153,6 +156,29 @@ export async function deleteUser(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Unknown error when deleting user!" });
+  }
+}
+
+export async function resetPassword(req, res) {
+  try {
+    const{ email } = req.body;
+
+    const user = await _findUserByEmail(email);
+
+    if (!user) {
+      return res.status(404).json({ message: `User with this email (${email}) does not exist.`});
+    }
+    
+    // Create a reset token (valid for 5 minutes)
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "5m" });
+
+    const mail = await _sendResetPasswordEmail(email, token);
+    if (mail) {
+      return res.status(200).json({ message: `Password reset link sent to your email ${email}.`});
+    }
+  } catch (err) {
+    console.error("Error sending reset email:", err);
+    return res.status(500).json({ message: "Error sending reset email."});
   }
 }
 

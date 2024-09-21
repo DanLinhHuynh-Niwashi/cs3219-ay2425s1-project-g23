@@ -231,6 +231,29 @@
     | 404 (Not Found)             | User with the specified ID not found                    |
     | 500 (Internal Server Error) | Database or server error                                |
 
+### Reset Password
+
+- This endpoint allows a user to request a password reset by providing their registered email address. The system will send an email with a reset link that includes a token. The link is valid for 5 minutes.and returns a JWT access token.
+- HTTP Method: `POST`
+- Endpoint: http://localhost:3001/reset-password
+- Body
+  - Required: `email` (string)
+
+    ```json
+    {
+      "email": "sample@gmail.com"
+    }
+    ```
+
+- Responses:
+
+    | Response Code               | Explanation                                        |
+    |-----------------------------|----------------------------------------------------|
+    | 200 (OK)                    | Reset password email sent succesfully |
+    | 404 (Unauthorized)          | User with this email does not exist                   |
+    | 500 (Internal Server Error) | Database or server error                           |
+
+
 ### Login
 
 - This endpoint allows a user to authenticate with an email and password and returns a JWT access token. The token is valid for 1 day and can be used subsequently to access protected resources. For example usage, refer to the [Authorization header section in the Get User endpoint](#auth-header).
