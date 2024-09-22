@@ -61,6 +61,7 @@
     |-----------------------------|-------------------------------------------------------|
     | 201 (Created)               | User created successfully, created user data returned |
     | 400 (Bad Request)           | Missing fields                                        |
+    | 400 (Bad Request)           | Password complexity requirements not met              |
     | 409 (Conflict)              | Duplicate username or email encountered               |
     | 500 (Internal Server Error) | Database or server error                              |
 
