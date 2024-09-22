@@ -3,11 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Log the email user and password to check if they're set correctly
-console.log("Email User:", process.env.EMAIL_USER);
-console.log("Email Password:", process.env.EMAIL_PASSWORD);
-
-
 export async function sendResetPasswordEmail(email, token) {
   const transporter = nodemailer.createTransport({
     host: 'smtp.office365.com', // For Outlook.com

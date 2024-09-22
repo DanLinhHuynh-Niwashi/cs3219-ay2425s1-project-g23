@@ -12,8 +12,9 @@ import {
   updateUserPrivilegeById as _updateUserPrivilegeById,
   findUserByEmail,
 } from "../model/repository.js";
-import { sendResetPasswordEmail as _sendResetPasswordEmail} from "../model/email-password.js"; 
+import { sendResetPasswordEmail as _sendResetPasswordEmail} from "../utils/email-password.js"; 
 import jwt from 'jsonwebtoken';
+import { validatePassword as _validatePassword} from "../utils/password-strength.js";
 
 export async function createUser(req, res) {
   try {
@@ -24,6 +25,10 @@ export async function createUser(req, res) {
         return res.status(409).json({ message: "username or email already exists" });
       }
 
+      const { isValid, error } = await _validatePassword(password);
+      if (!isValid) {
+        return res.status(400).json({ message: error.join(" ") });
+      }
       const salt = bcrypt.genSaltSync(10);
       const hashedPassword = bcrypt.hashSync(password, salt);
       const createdUser = await _createUser(username, email, hashedPassword);
@@ -168,7 +173,7 @@ export async function resetPassword(req, res) {
     if (!user) {
       return res.status(404).json({ message: `User with this email (${email}) does not exist.`});
     }
-    
+
     // Create a reset token (valid for 5 minutes)
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "5m" });
 
