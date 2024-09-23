@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { isValidObjectId } from "mongoose";
 import {
   createUser as _createUser,
+  createUserProfile as _createUserProfile,
   deleteUserById as _deleteUserById,
   findAllUsers as _findAllUsers,
   findUserByEmail as _findUserByEmail,
@@ -10,10 +11,12 @@ import {
   findUserByUsernameOrEmail as _findUserByUsernameOrEmail,
   updateUserById as _updateUserById,
   updateUserPrivilegeById as _updateUserPrivilegeById,
+  findUserProfileById as _findUserProfileById,
+  updateUserProfileById as _updateUserProfileById,
   findUserByEmail,
 } from "../model/repository.js";
-import { sendResetPasswordEmail as _sendResetPasswordEmail} from "../utils/email-password.js"; 
 import jwt from 'jsonwebtoken';
+import { sendResetPasswordEmail as _sendResetPasswordEmail} from "../utils/email-password.js"; 
 import { validatePassword as _validatePassword} from "../utils/password-strength.js";
 
 export async function createUser(req, res) {
@@ -25,7 +28,7 @@ export async function createUser(req, res) {
         return res.status(409).json({ message: "username or email already exists" });
       }
 
-      const { isValid, error } = await _validatePassword(password);
+      const { isValid, error } = _validatePassword(password);
       if (!isValid) {
         return res.status(400).json({ message: error.join(" ") });
       }
@@ -44,6 +47,50 @@ export async function createUser(req, res) {
     return res.status(500).json({ message: "Unknown error when creating new user!" });
   }
 }
+
+export async function createUserProfile(req, res) {
+  try {
+    const userId = req.params.id;
+    const { name, bio, gender, location, proficiency, github, linkedin } = req.body;
+
+    if (name) {
+      // Check if the user exists
+      const user = await _findUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if the user profile already exists
+      const existingProfile = await _findUserProfileById(userId);
+      if (existingProfile) {
+        return res.status(409).json({ message: "User profile already exists" });
+      }
+
+      const errors={};
+  
+      if (gender && !["Male", "Female", "Others"].includes(gender)) {
+        errors.gender = "Gender must be Male, Female, or Others.";
+      }
+  
+      if (Object.keys(errors).length > 0) {
+        return res.status(400).json({ message: "Validation errors", errors});
+      }
+
+      const newProfile = await _createUserProfile({ userId, name, bio, gender, location, proficiency, github, linkedin });
+      
+      return res.status(201).json({
+        message: "User profile created successfully",
+        data: newProfile,
+      });
+    } else {
+      return res.status(400).json({ message: "Name is a required." });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Error creating user profile" });
+  }
+}
+
 
 export async function getUser(req, res) {
   try {
@@ -186,6 +233,48 @@ export async function resetPassword(req, res) {
     return res.status(500).json({ message: "Error sending reset email."});
   }
 }
+
+// Update user profile
+export async function updateUserProfile(req, res) {
+  try {
+    const userId = req.params.id; // Get userId from request parameters
+    const profileData = req.body; // Get the profile data from the request body
+
+    if (!isValidObjectId(userId)) {
+      return res.status(404).json({ message: `User ${userId} not found` });
+    }
+
+    const userProfile = await _findUserProfileById(userId); // Assume this function checks if the profile exists
+    if (!userProfile) {
+      return res.status(404).json({ message: `Profile for user ${userId} not found` });
+    }
+
+    const errors={};
+
+    if (!profileData.name || profileData.name.trim() == "") {
+      errors.name = "Name is required.";
+    }
+
+    if (profileData.gender && !["Male", "Female", "Others"].includes(profileData.gender)) {
+      errors.gender = "Gender must be Male, Female, or Others.";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return res.status(400).json({ message: "Validation errors", errors});
+    }
+
+    const updatedProfile = await _updateUserProfileById(userId, profileData); // Update the profile
+
+    return res.status(200).json({
+      message: `User profile updated successfully for user ${userId}`,
+      data: updatedProfile,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when updating user profile!" });
+  }
+}
+
 
 export function formatUserResponse(user) {
   return {

@@ -1,4 +1,4 @@
-export async function validatePassword(password) {
+export function validatePassword(password) {
     const minLength = 8;
     const errors = [];
 

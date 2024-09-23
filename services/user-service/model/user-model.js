@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const UserModelSchema = new Schema({
-  username: {
-    type: String,
-    required: true,
-    unique: true,
+  userId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'user-account', // Referencing the User model (user-account is the name in the User model)
+    required: true 
   },
   email: {
     type: String,
