@@ -2,7 +2,7 @@ import { isValidObjectId } from "mongoose";
 import {
     findAllCategories as _findAllCategories,
     findCategoryById as _findCategoryById
-  } from "../model/repository-category.js";
+  } from "../model/repository.js";
 
 export function formatCategoryResponse(category) {
     return {
