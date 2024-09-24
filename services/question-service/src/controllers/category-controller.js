@@ -1,7 +1,8 @@
 import { isValidObjectId } from "mongoose";
 import {
     findAllCategories as _findAllCategories,
-  } from "../model/repository-mock.js";
+    findCategoryById as _findCategoryById
+  } from "../model/repository-category.js";
 
 export function formatCategoryResponse(category) {
     return {
@@ -17,5 +18,24 @@ export async function getAllCategories(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Unknown error when getting all categories!" });
+  }
+}
+
+export async function getCategory(req, res) {
+  try {
+    const id = req.params.id;
+    if (!isValidObjectId(id)) {
+      return res.status(404).json({ message: `Category ${id} not found` });
+    }
+
+    const category = await _findCategoryById(id);
+    if (!question) {
+      return res.status(404).json({ message: `Category ${id} not found` });
+    } else {
+      return res.status(200).json({ message: `Found category!`, data: formatCategoryResponse(category) });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when getting category!" });
   }
 }

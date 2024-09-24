@@ -5,7 +5,7 @@ import {
     findQuestionById as _findQuestionById,
     findAllQuestions as _findAllQuestions,
     updateQuestionById as _updateQuestionById,
-  } from "../model/repository-mock.js";
+  } from "../model/repository-question.js";
 
 export async function createQuestion(req, res) {
   try {
