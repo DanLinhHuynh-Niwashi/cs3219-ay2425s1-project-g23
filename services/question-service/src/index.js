@@ -1,8 +1,8 @@
 import express from "express";
 import cors from "cors";
 
-import questionRoutes from './src/routes/question-routes.js';
-import categoryRoutes from './src/routes/category-routes.js';
+import questionRoutes from './routes/question-routes.js';
+import categoryRoutes from './routes/category-routes.js';
 
 const app = express();
 
