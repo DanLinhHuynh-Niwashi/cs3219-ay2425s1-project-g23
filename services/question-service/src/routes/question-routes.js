@@ -7,13 +7,13 @@ import {
   getQuestion,
   updateQuestion,
   
-} from "../controller/question-controller.js";
+} from "../controllers/question-controller.js";
 
 const questionRoutes = express.Router();
 
 questionRoutes.get("/", getAllQuestions);
 
-questionRoutes.get("/categories", getAllCategories);
+//questionRoutes.get("/categories", getAllCategories);
 
 questionRoutes.post("/", createQuestion);
 

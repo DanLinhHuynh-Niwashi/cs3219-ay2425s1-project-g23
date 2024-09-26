@@ -3,7 +3,11 @@ import path from 'path';
 import Question from './question-model.js';
 import Category from './category-model.js';
 
-const dataFilePath = path.join(__dirname, 'data.json');
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const dataFilePath = path.join(__dirname, '../mock-database.json');
 
 const readDataFromJson = () => {
   const jsonData = fs.readFileSync(dataFilePath, 'utf-8');
