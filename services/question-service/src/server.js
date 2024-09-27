@@ -2,8 +2,14 @@ import http from "http";
 import index from "./index.js";
 import "dotenv/config";
 import { connectToDB } from "./model/repository.js";
+import express from 'express';
+import cors from 'cors';
+import questionRoutes from './routes/question-routes.js';
+import categoryRoutes from './routes/category-routes.js';
 
-const port = process.env.PORT || 3001;
+const app = express();
+const port = process.env.PORT || 3000;
+app.use(cors());
 
 const server = http.createServer(index);
 

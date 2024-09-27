@@ -28,9 +28,10 @@ export async function createQuestion(req, res) {
 export async function getQuestion(req, res) {
   try {
     const id = req.params.id;
-    if (!isValidObjectId(id)) {
+    
+    /*if (!isValidObjectId(id)) {
       return res.status(404).json({ message: `Question ${id} not found` });
-    }
+    }*/
 
     const question = await _findQuestionById(id);
     if (!question) {
@@ -62,9 +63,10 @@ export async function updateQuestion(req, res) {
     const questionId = req.params.id;
 
     if (title || description || complexity || categories) {
-      if (!isValidObjectId(questionId)) {
+      //remove commented once connected to mongo
+      /*if (!isValidObjectId(questionId)) {
         return res.status(404).json({ message: `Question ${questionId} not found` });
-      }
+      }*/
 
       const question = await _findQuestionById(questionId);
       if (!question) {
@@ -98,10 +100,10 @@ export async function updateQuestion(req, res) {
 
 export async function deleteQuestion(req, res) {
   try {
-    const questionId = req.params.id;
+    /*const questionId = req.params.id;
     if (!isValidObjectId(questionId)) {
       return res.status(404).json({ message: `Question ${questionId} not found` });
-    }
+    }*/
 
     const question = await _findQuestionById(questionId);
     if (!question) {

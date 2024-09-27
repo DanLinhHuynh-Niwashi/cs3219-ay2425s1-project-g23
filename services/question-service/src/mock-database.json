@@ -1,33 +1,57 @@
 {
-    "questions": [
-      {
-        "id": 1,
-        "title": "Reverse a String",
-        "description": "Write a function that reverses a string. The input string is given as an array of characters.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n\nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n\nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ASCII character.",
-        "complexity": "easy",
-        "categories": [1, 2]
-      },
-      {
-        "id": 2,
-        "title": "Linked List Cycle Detection",
-        "description": "Implement a function to detect if a linked list contains a cycle.",
-        "complexity": "easy",
-        "categories": [1, 3]
-      }
-    ],
-    "categories": [
-      {
-        "id": 1,
-        "name": "Algorithm"
-      },
-      {
-        "id": 2,
-        "name": "Strings"
-      },
-      {
-        "id": 3,
-        "name": "Data Structures"
-      }
-    ]
-  }
-  
+  "questions": [
+    {
+      "id": 1,
+      "title": "Reverse a String",
+      "description": "Write a function that reverses a string. The input string is given as an array of characters.\nYou must do this by modifying the input array in-place with O(1) extra memory.\n\nExample 1:\nInput: s = [\"h\",\"e\",\"l\",\"l\",\"o\"]\nOutput: [\"o\",\"l\",\"l\",\"e\",\"h\"]\n\nExample 2:\nInput: s = [\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]\nOutput: [\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]\n\nConstraints:\n1 <= s.length <= 105\ns[i] is a printable ASCII character.",
+      "complexity": "easy",
+      "categories": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Linked List Cycle Detection",
+      "description": "Implement a function to detect if a linked list contains a cycle.",
+      "complexity": "easy",
+      "categories": [
+        1,
+        3
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Binary Search Algorithm",
+      "description": "Implement the binary search algorithm in an array of sorted integers.",
+      "complexity": "medium",
+      "categories": [
+        1,
+        3
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Testing",
+      "description": "lorep ipsum",
+      "complexity": "hard",
+      "categories": [
+        2
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "id": 1,
+      "name": "Algorithm"
+    },
+    {
+      "id": 2,
+      "name": "Strings"
+    },
+    {
+      "id": 3,
+      "name": "Data Structures"
+    }
+  ]
+}
