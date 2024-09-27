@@ -3,7 +3,9 @@
     padding: 20px;
     border-radius: 5px;
   }
-  
+  .description {
+    white-space: pre-wrap; /* Preserve whitespace and line breaks */
+  }
   .card {
     border: 1px solid #D6BCFA; /* Lilac border color */
   }

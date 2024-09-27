@@ -94,7 +94,7 @@ const Question = () => {
               <Card.Title className="mb-4" style={{ color: '#4A4A4A', fontWeight: 'bold' }}>
                 {question.title}
               </Card.Title>
-              <Card.Text style={{ color: '#4A4A4A' }}>
+              <Card.Text className="description" style={{ color: '#4A4A4A' }}>
                 <strong>Description:</strong> <br />
                 {question.description}
               </Card.Text>
