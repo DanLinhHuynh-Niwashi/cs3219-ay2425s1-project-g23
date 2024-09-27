@@ -1,3 +1,4 @@
+// src/components/AdminPanel.js
 import React from 'react';
 import { Button, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
@@ -10,7 +11,7 @@ const AdminPanel = ({ addQuestion, editQuestion, deleteQuestion }) => {
     <Container className="admin-panel">
       <Row className="align-items-center">
         <Col className="admin-panel-label">
-          <strong>Admin Panel</strong> {/* Admin Panel label */}
+          <strong>Admin Panel</strong>
         </Col>
         <Col className="text-end">
           {addQuestion && (
