@@ -1,19 +1,20 @@
+// src/components/QuestionsList.js
 import React from 'react';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Row, Col } from 'react-bootstrap';
 import QuestionCard from './QuestionCard';
-import './QuestionsList.css';
+import './QuestionsList.css'; // Add custom styles if needed
 
-const QuestionsList = ({ questions, categoriesDict }) => { // accept categoriesDict as a prop
+const QuestionsList = ({ questions, categoriesDict }) => {
   return (
-    <Container fluid className="questions-list-container">
-      <Row className="questions-list-row">
-        {questions.map((question) => (
-          <Col xs={12} key={question.id} className="question-card-col">
-            <QuestionCard question={question} categoriesDict={categoriesDict} /> {/* Pass categoriesDict */}
+    <div className="questions-list">
+      {questions.map((question) => (
+        <Row key={question.id} className="mb-3"> {/* Use Row to make each card a full-width row */}
+          <Col>
+            <QuestionCard question={question} categoriesDict={categoriesDict} />
           </Col>
-        ))}
-      </Row>
-    </Container>
+        </Row>
+      ))}
+    </div>
   );
 };
 
