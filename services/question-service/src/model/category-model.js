@@ -1,7 +1,12 @@
-export default class Category {
-    constructor(id, name) {
-      this.id = id;
-      this.name = name;
-    }
-  }
-  
+import mongoose from "mongoose";
+
+// Define the Category schema
+const categorySchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+});
+
+export default mongoose.model('Category', categorySchema,'categories');

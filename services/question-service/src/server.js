@@ -1,3 +1,7 @@
+import http from "http";
+import index from "./index.js";
+import "dotenv/config";
+import { connectToDB } from "./model/repository.js";
 import express from 'express';
 import cors from 'cors';
 import questionRoutes from './routes/question-routes.js';
@@ -7,11 +11,14 @@ const app = express();
 const port = process.env.PORT || 3000;
 app.use(cors());
 
-app.use(express.json());
-app.use('/api/questions', questionRoutes);
-app.use('/api/categories', categoryRoutes);
+const server = http.createServer(index);
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+await connectToDB().then(() => {
+  console.log("MongoDB Connected!");
+
+  server.listen(port);
+  console.log("User service server listening on http://localhost:" + port);
+}).catch((err) => {
+  console.error("Failed to connect to DB");
+  console.error(err);
 });
