@@ -37,7 +37,7 @@ const Question = () => {
 
         // Create a dictionary for quick category name lookup by index
         const categoriesLookup = categoriesData.data.reduce((acc, category, index) => {
-          acc[index + 1] = category.name; // Use index + 1 as key to match question categories
+          acc[category.id] = category.name;
           return acc;
         }, {});
         

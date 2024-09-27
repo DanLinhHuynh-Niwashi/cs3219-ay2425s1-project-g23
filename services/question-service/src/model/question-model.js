@@ -15,12 +15,11 @@ const questionSchema = new mongoose.Schema({
     required: true,
     enum: ['easy', 'medium', 'hard'],
   },
-  categories: [
-    {
-      type: Number,
-      required: true,
-    },
-  ],
+  categories: [{
+    type: mongoose.Schema.Types.ObjectId, // Use ObjectId to reference category documents
+    ref: 'Category', // Reference to the Category model
+    required: true,
+  }],
 });
 
 export default mongoose.model('Question', questionSchema, 'questions');

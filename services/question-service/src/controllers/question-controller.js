@@ -29,9 +29,9 @@ export async function getQuestion(req, res) {
   try {
     const id = req.params.id;
     
-    /*if (!isValidObjectId(id)) {
+    if (!isValidObjectId(id)) {
       return res.status(404).json({ message: `Question ${id} not found` });
-    }*/
+    }
 
     const question = await _findQuestionById(id);
     if (!question) {
@@ -63,10 +63,9 @@ export async function updateQuestion(req, res) {
     const questionId = req.params.id;
 
     if (title || description || complexity || categories) {
-      //remove commented once connected to mongo
-      /*if (!isValidObjectId(questionId)) {
+      if (!isValidObjectId(questionId)) {
         return res.status(404).json({ message: `Question ${questionId} not found` });
-      }*/
+      }
 
       const question = await _findQuestionById(questionId);
       if (!question) {
@@ -84,7 +83,7 @@ export async function updateQuestion(req, res) {
       if (categories) {
         question.categories = categories
       }
-      const updatedQuestion = await _updateQuestionById(question.title, question.description, question.complexity, question.categories);
+      const updatedQuestion = await _updateQuestionById(questionId, question.title, question.description, question.complexity, question.categories);
       return res.status(200).json({
         message: `Updated question ${questionId}`,
         data: formatQuestionResponse(updatedQuestion),
@@ -100,10 +99,10 @@ export async function updateQuestion(req, res) {
 
 export async function deleteQuestion(req, res) {
   try {
-    /*const questionId = req.params.id;
+    const questionId = req.params.id;
     if (!isValidObjectId(questionId)) {
       return res.status(404).json({ message: `Question ${questionId} not found` });
-    }*/
+    }
 
     const question = await _findQuestionById(questionId);
     if (!question) {
