@@ -79,10 +79,13 @@ export async function updateQuestionById(id, title, description, complexity, cat
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
       {
-        title,
-        description,
-        complexity,
-        categories, // Update the categories array
+        $set: {
+          title,
+          description,
+          complexity,
+          categories, 
+          // Update the categories array
+        }, 
       },
       { new: true } // Return the updated question
     );
