@@ -1,11 +1,10 @@
-// src/pages/Questions.js
 import React, { useState, useEffect } from 'react';
 import { Row, Col } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import FilterPanel from '../components/FilterPanel';
 import QuestionsList from '../components/QuestionsList';
-import AdminPanel from '../components/AdminPanel'; // Import AdminPanel
+import AdminPanel from '../components/AdminPanel';
 import './Questions.css';
 
 const Questions = () => {
@@ -15,15 +14,26 @@ const Questions = () => {
   const [categories, setCategories] = useState([]);
   const [categoriesDict, setCategoriesDict] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
+
+  // Set the base URL for API calls
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/questions');
+        console.log(`Fetching questions from: ${baseUrl}/questions`);
+        const response = await fetch(`${baseUrl}/questions`);
+        console.log("Questions response:", response);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch questions: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
-        setQuestions(data.data);
-        setFilteredQuestions(data.data);
+        console.log("Questions data:", data);
+        setQuestions(data.data || []);
+        setFilteredQuestions(data.data || []);
       } catch (error) {
         console.error('Error fetching questions:', error);
       }
@@ -31,15 +41,26 @@ const Questions = () => {
 
     const fetchCategories = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/categories');
+        console.log(`Fetching categories from: ${baseUrl}/categories`);
+        const response = await fetch(`${baseUrl}/categories`);
+        console.log("Categories response:", response);
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
+        }
+
         const data = await response.json();
-        setCategories(data.data);
-        const categoriesLookup = data.data.reduce((acc, category) => {
-          acc[category.id] = category.name;
+        console.log("Categories data:", data);
+
+        // Create a dictionary for quick category name lookup by index
+        const categoriesLookup = data.data.reduce((acc, category, index) => {
+          acc[index + 1] = category.name; // Use index + 1 as key to match question categories
           return acc;
         }, {});
-        setCategoriesDict(categoriesLookup);
-        setSelectedCategories(data.data.map((category) => category.id.toString())); // Select all categories by default
+
+        setCategories(data.data || []);
+        setCategoriesDict(categoriesLookup); // Store in state
+        setSelectedCategories(Object.keys(categoriesLookup)); // Select all categories by default
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
@@ -47,23 +68,38 @@ const Questions = () => {
 
     fetchQuestions();
     fetchCategories();
-  }, []);
+  }, [baseUrl]);
 
   // Update filtered questions whenever search term or selected categories change
   useEffect(() => {
+    console.log("Filtering questions...");
     filterQuestions();
   }, [searchTerm, selectedCategories, questions]);
 
   const filterQuestions = () => {
-    const filtered = questions.filter((q) =>
-      selectedCategories.some((categoryId) => q.categories.includes(parseInt(categoryId))) &&
-      q.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    console.log("Questions to filter:", questions);
+    console.log("Selected categories:", selectedCategories);
+  
+    const filtered = questions.filter((q) => {
+      // Map category IDs to names using the categoriesDict
+      const questionCategoryNames = q.categories.map(categoryId => categoriesDict[categoryId]);
+  
+      // Check if any of the question's category names are in the selected categories
+      const matchesCategory = selectedCategories.some((categoryName) => 
+        questionCategoryNames.includes(categoryName)
+      );
+  
+      // Filter by both category match and search term
+      return matchesCategory && q.title.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  
+    console.log("Filtered questions:", filtered);
     setFilteredQuestions(filtered);
   };
 
-  const handleFilterChange = (selectedCategoryIds) => {
-    setSelectedCategories(selectedCategoryIds);
+  const handleFilterChange = (selectedCategoryNames) => {
+    console.log("Category filter changed:", selectedCategoryNames);
+    setSelectedCategories(selectedCategoryNames);
   };
 
   const handleSearchChange = (e) => {
@@ -93,7 +129,7 @@ const Questions = () => {
           {filteredQuestions.length > 0 ? (
             <QuestionsList
               questions={filteredQuestions}
-              categoriesDict={categoriesDict}
+              categoriesDict={categoriesDict} // Pass category dictionary for lookup
             />
           ) : (
             <p>No questions available</p>

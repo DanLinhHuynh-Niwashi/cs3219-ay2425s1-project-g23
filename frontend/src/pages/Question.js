@@ -1,3 +1,4 @@
+// src/pages/Question.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Container, Row, Col } from 'react-bootstrap';
@@ -8,16 +9,19 @@ const Question = () => {
   const { id } = useParams(); // Get the question ID from the URL
   const navigate = useNavigate(); // Use for navigating to edit page
   const [question, setQuestion] = useState(null);
-  const [categoriesDict, setCategoriesDict] = useState({}); // Dictionary for category look-up
+  const [categoriesDict, setCategoriesDict] = useState({}); // Dictionary for category name lookup
   const [loading, setLoading] = useState(true); // Add a loading state
   const [error, setError] = useState(null); // Add an error state
+
+  // Set the base URL for API calls
+  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
 
   // Fetch question and categories details from API
   useEffect(() => {
     const fetchQuestionAndCategories = async () => {
       try {
         // Fetch question details
-        const questionResponse = await fetch(`http://localhost:3000/api/questions/${id}`);
+        const questionResponse = await fetch(`${baseUrl}/questions/${id}`);
         if (!questionResponse.ok) {
           throw new Error(`Error fetching question: ${questionResponse.statusText}`);
         }
@@ -25,19 +29,19 @@ const Question = () => {
         setQuestion(questionData.data);
 
         // Fetch categories details
-        const categoriesResponse = await fetch('http://localhost:3000/api/categories');
+        const categoriesResponse = await fetch(`${baseUrl}/categories`);
         if (!categoriesResponse.ok) {
           throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
         }
         const categoriesData = await categoriesResponse.json();
 
-        // Create a dictionary for quick category name lookup
-        const categoriesLookup = categoriesData.data.reduce((acc, category) => {
-          acc[category.id] = category.name;
+        // Create a dictionary for quick category name lookup by index
+        const categoriesLookup = categoriesData.data.reduce((acc, category, index) => {
+          acc[index + 1] = category.name; // Use index + 1 as key to match question categories
           return acc;
         }, {});
+        
         setCategoriesDict(categoriesLookup); // Store in state
-
         setLoading(false); // Set loading to false when data is fetched
       } catch (error) {
         console.error('Error fetching question or categories:', error);
@@ -47,11 +51,11 @@ const Question = () => {
     };
 
     fetchQuestionAndCategories();
-  }, [id]); // Re-fetch data when the ID changes
+  }, [id, baseUrl]); // Re-fetch data when the ID or baseUrl changes
 
   const deleteQuestion = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/questions/${id}`, {
+      const response = await fetch(`${baseUrl}/questions/${id}`, {
         method: 'DELETE',
       });
 
@@ -121,13 +125,13 @@ const Question = () => {
                       key={index}
                       className="me-1 mb-1"
                       style={{
-                        backgroundColor: '#D6BCFA', // Lilac color for categories
+                        backgroundColor: '#D6BCFA', // Customize the color as needed
                         color: '#fff',
                         fontSize: '14px',
                         padding: '5px',
                       }}
                     >
-                      {categoriesDict[categoryId]} {/* Display the category name instead of ID */}
+                      {categoriesDict[categoryId] || 'Unknown Category'} {/* Display the category name instead of ID */}
                     </Badge>
                   ))
                 ) : (

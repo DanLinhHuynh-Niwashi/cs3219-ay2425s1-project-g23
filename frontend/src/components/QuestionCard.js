@@ -1,9 +1,10 @@
+// src/components/QuestionCard.js
 import React from 'react';
-import { Card, Badge, Button } from 'react-bootstrap';
+import { Card, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import './QuestionCard.css';
 
-const QuestionCard = ({ question, categoriesDict }) => { // Accept categoriesDict as a prop
+const QuestionCard = ({ question, categoriesDict }) => {
   const navigate = useNavigate();
 
   // Function to handle click and navigate to question details page
@@ -36,19 +37,16 @@ const QuestionCard = ({ question, categoriesDict }) => { // Accept categoriesDic
             question.categories.map((categoryId, index) => (
               <Badge
                 key={index}
-                bg="info" 
+                bg="info"
                 className="me-1"
-                style={{ backgroundColor: '#D6BCFA' }} 
+                style={{ backgroundColor: '#D6BCFA' }}
               >
-                {categoriesDict[categoryId] || "Unknown"} {/* Use categoriesDict to get name */}
+                {categoriesDict[categoryId] || "Unknown"}
               </Badge>
             ))
           ) : (
-            <Badge bg="secondary">No Categories</Badge> /* Fallback for no categories */
+            <Badge bg="secondary">No Categories</Badge>
           )}
-        </div>
-        <div className="view-question mt-3">
-          <Button onClick={handleCardClick}>View Question →</Button>
         </div>
       </Card.Body>
     </Card>
