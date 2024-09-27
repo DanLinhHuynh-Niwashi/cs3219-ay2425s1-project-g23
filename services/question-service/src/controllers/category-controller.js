@@ -29,7 +29,7 @@ export async function getCategory(req, res) {
     }
 
     const category = await _findCategoryById(id);
-    if (!question) {
+    if (!category) {
       return res.status(404).json({ message: `Category ${id} not found` });
     } else {
       return res.status(200).json({ message: `Found category!`, data: formatCategoryResponse(category) });
