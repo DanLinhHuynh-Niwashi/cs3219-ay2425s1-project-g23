@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+/* Ensure body and html take up the full viewport height */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* Prevent scrolling on the entire page */
+}
+
+/* Ensure the layout container also occupies the full height */
+.layout-container {
+  height: 100%;
+}
