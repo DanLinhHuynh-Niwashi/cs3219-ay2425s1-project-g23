@@ -8,7 +8,7 @@ Make sure that your .env file is in the **same level** with package.json.
 
 Sample .env
 ```
-QUESTION_API_URL=http://localhost:{port}
+REACT_APP_QUESTION_API_URL=http://localhost:{port}
 ```
 Replace {port} with the port on which your question service would run. **Avoid port 3000** as our frontend will run there.
 
