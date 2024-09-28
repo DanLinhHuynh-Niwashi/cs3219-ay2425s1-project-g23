@@ -10,5 +10,5 @@
 ### Run
 - Step 1: Clone the repository
 - Step 2: Run `npm install` to install necessary packages
-- Step 3: Create .env files at /services/question-service and /frontend (follow the instruction in each folder)
+- Step 3: Create **.env** files at `/services/question-service` and `/frontend` (follow the instruction in each folder)
 - Step 4: Run `npm start` and see the magic!
