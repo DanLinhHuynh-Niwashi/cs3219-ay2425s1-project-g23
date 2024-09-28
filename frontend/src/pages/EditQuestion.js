@@ -16,7 +16,7 @@ const EditQuestion = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchQuestion = async () => {
