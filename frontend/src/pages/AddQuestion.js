@@ -19,10 +19,12 @@ const AddQuestion = () => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${baseUrl}/categories`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
-        }
         const data = await response.json();
+        if (!response.ok) {
+          throw new Error
+          (`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
+        }
+        
         setCategories(data.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -68,27 +70,23 @@ const AddQuestion = () => {
         body: JSON.stringify(newQuestion),
       });
 
-      console.log('Response status:', response.status); // Log response status
-      console.log('Response statusText:', response.statusText); // Log response statusText
-
+      const result = await response.json();
       if (!response.ok) {
-        const errorText = await response.text(); // Get error message from response
-        console.error('Response error text:', errorText); // Log error text
-        throw new Error(`Failed to add question: ${response.status} ${response.statusText}`);
+        throw new Error
+        (`Failed to add question: ${response.status} ${response.statusText} - ${result.message}`);
       }
 
-      const result = await response.json(); // Log the response JSON from backend
       console.log('Result from server:', result); // Check what the server returned
 
       // Display a success message and clear the form
-      alert('Question added successfully!');
+      alert(result.message);
       setTitle('');
       setDescription('');
       setComplexity('easy');
       setSelectedCategories([]);
     } catch (error) {
-      console.error('Error adding question:', error);
-      setError('Failed to add question. Please check the console for more details.');
+      console.error('Error adding question:', error.message);
+      setError(error.message);
     }
   };
 

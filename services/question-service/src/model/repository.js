@@ -109,3 +109,20 @@ export async function deleteQuestionById(id) {
     throw error;
   }
 }
+
+// Check for duplicate question
+export async function checkDuplicateQuestion(id, title, description) {
+  try {
+    const existingQuestion = await Question.findOne({
+      title,
+      description,
+    });
+    if (id) {
+      return existingQuestion !== null && existingQuestion.id != id;
+    }
+    return existingQuestion !== null;
+  } catch (error) {
+    console.error('Error checking for duplicate question:', error);
+    throw error;
+  }
+}

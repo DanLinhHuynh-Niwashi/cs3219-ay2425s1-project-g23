@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import './EditQuestion.css';
 
@@ -22,10 +22,12 @@ const EditQuestion = () => {
     const fetchQuestion = async () => {
       try {
         const response = await fetch(`${baseUrl}/questions/${id}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch question: ${response.status} ${response.statusText}`);
-        }
         const data = await response.json();
+        if (!response.ok) {
+          throw new Error
+          (`Failed to fetch question: ${response.status} ${response.statusText} - ${data.message}`);
+        }
+        
         setQuestion(data.data);
         setTitle(data.data.title);
         setDescription(data.data.description);
@@ -42,10 +44,11 @@ const EditQuestion = () => {
     const fetchCategories = async () => {
       try {
         const response = await fetch(`${baseUrl}/categories`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
-        }
         const data = await response.json();
+        if (!response.ok) {
+          throw new Error
+          (`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
+        }
         setCategories(data.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -65,7 +68,7 @@ const EditQuestion = () => {
     e.preventDefault();
 
     if (selectedCategories.length === 0) {
-      alert('Please select at least one category.');
+      setError('Please select at least one category.');
       return;
     }
 
@@ -89,15 +92,17 @@ const EditQuestion = () => {
         body: JSON.stringify(updatedQuestion),
       });
 
+      const result = await response.json();
       if (!response.ok) {
-        const errorText = await response.text(); // Get error message
-        console.error('Response error text:', errorText); // Log error text
-        throw new Error(`Failed to update question: ${response.status} ${response.statusText}`);
+        throw new Error
+        (`Error updating question: ${response.status} ${response.statusText} - ${result.message}`);
       }
-
+      alert(result.message);
       navigate(-1); // Go back to the previous page after updating
+      
     } catch (error) {
       console.error('Error updating question:', error); // Updated error message
+      setError(error.message);
     }
   };
 
@@ -105,15 +110,13 @@ const EditQuestion = () => {
     return <div>Loading...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   return (
     <Container className="edit-question-page">
       <Row>
         <Col>
           <h2>Edit Question</h2>
+          {error && <Alert variant="danger">{error}</Alert>} {/* Display error message */}
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="title">
               <Form.Label>Title</Form.Label>
