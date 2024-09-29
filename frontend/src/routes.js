@@ -1,5 +1,5 @@
-import React, { lazy, Suspense } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 
 // Lazy load components for better performance
 const Questions = lazy(() => import('./pages/Questions'));
@@ -9,6 +9,15 @@ const EditQuestion = lazy(() => import('./pages/EditQuestion'));
 //const NotFound = lazy(() => import('./pages/NotFound')); // Fallback for undefined routes
 
 const AppRoutes = () => {
+  const navigate = useNavigate();
+
+  // Redirect to "/questions" on app load
+  useEffect(() => {
+    if (window.location.pathname === '/') {
+      navigate('/questions');
+    }
+  }, [navigate]);
+
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <Routes>
