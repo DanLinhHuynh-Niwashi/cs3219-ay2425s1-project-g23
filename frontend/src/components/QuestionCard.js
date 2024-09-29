@@ -27,7 +27,7 @@ const QuestionCard = ({ question, categoriesDict }) => {
         </Card.Text>
         <div className="question-difficulty">
           <Badge
-            bg={question.complexity === 'easy' ? 'success' : question.complexity === 'medium' ? 'warning' : 'danger'}
+            bg={question.complexity === 'Easy' ? 'success' : question.complexity === 'Medium' ? 'warning' : 'danger'}
           >
             {question.complexity}
           </Badge>

@@ -13,7 +13,7 @@ const questionSchema = new mongoose.Schema({
   complexity: {
     type: String,
     required: true,
-    enum: ['easy', 'medium', 'hard'],
+    enum: ['Easy', 'Medium', 'Hard'],
   },
   categories: [{
     type: mongoose.Schema.Types.ObjectId, // Use ObjectId to reference category documents

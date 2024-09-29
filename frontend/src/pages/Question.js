@@ -102,19 +102,14 @@ const Question = () => {
                 <strong>Difficulty:</strong> <br />
                 <Badge
                   className="question-badge"
+                  bg={question.complexity === 'Easy' ? 'success' : question.complexity === 'Medium' ? 'warning' : 'danger'}
                   style={{
-                    backgroundColor:
-                      question.complexity === 'easy'
-                        ? '#28a745' // Green for easy
-                        : question.complexity === 'medium'
-                        ? '#ffc107' // Yellow for medium
-                        : '#dc3545', // Red for hard
                     color: '#fff',
                     fontSize: '14px',
                     padding: '5px',
                   }}
                 >
-                  {question.complexity.charAt(0).toUpperCase() + question.complexity.slice(1)}
+                  {question.complexity}
                 </Badge>
               </Card.Text>
               <Card.Text>
