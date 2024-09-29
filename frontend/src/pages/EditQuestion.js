@@ -15,8 +15,10 @@ const EditQuestion = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [categoriesDict, setCategoriesDict] = useState({});
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
+  const [loading, setLoading] = useState(true);
 
   const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
@@ -76,7 +78,7 @@ const EditQuestion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setSubmitting(true);
     const updatedQuestion = {
       title,
       description,
@@ -105,6 +107,8 @@ const EditQuestion = () => {
     } catch (error) {
       console.error('Error updating question:', error);
       setError(error.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -125,6 +129,7 @@ const EditQuestion = () => {
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
+            disabled={isSubmitting}
           />
         </Form.Group>
 
@@ -136,6 +141,7 @@ const EditQuestion = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            disabled={isSubmitting}
           />
         </Form.Group>
 
@@ -146,6 +152,7 @@ const EditQuestion = () => {
             value={complexity}
             onChange={(e) => setComplexity(e.target.value)}
             required
+            disabled={isSubmitting}
           >
             <option value="easy">Easy</option>
             <option value="medium">Medium</option>
@@ -161,6 +168,7 @@ const EditQuestion = () => {
             options={categories.filter(option => !selectedCategories.includes(option.value))}
             onChange={handleCategoryChange}
             placeholder="Select categories..."
+            isDisabled={isSubmitting}
           />
           <div className="selected-categories mt-2">
             {selectedCategories.map((categoryId) => (
@@ -171,10 +179,10 @@ const EditQuestion = () => {
           </div>
         </Form.Group>
 
-        <Button variant="primary" type="submit" className="mt-3">
+        <Button disabled={isSubmitting} variant="primary" type="submit" className="mt-3">
           Save Changes
         </Button>
-        <Button variant="secondary" onClick={() => navigate(-1)} className="mt-3 ms-2">
+        <Button disabled={isSubmitting} variant="secondary" onClick={() => navigate(-1)} className="mt-3 ms-2">
           Cancel
         </Button>
       </Form>
