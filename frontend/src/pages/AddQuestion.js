@@ -13,6 +13,8 @@ const AddQuestion = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [error, setError] = useState(null);
 
+  const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
+
   const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const AddQuestion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     setError(null); // Reset error state
 
     if (!title || !description || selectedCategories.length === 0) {
@@ -87,6 +90,8 @@ const AddQuestion = () => {
     } catch (error) {
       console.error('Error adding question:', error.message);
       setError(error.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -104,6 +109,7 @@ const AddQuestion = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
+                disabled={isSubmitting}
               />
             </Form.Group>
             <Form.Group controlId="description" className="mt-3">
@@ -114,6 +120,7 @@ const AddQuestion = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
+                disabled={isSubmitting}
               />
             </Form.Group>
             <Form.Group controlId="complexity" className="mt-3">
@@ -122,6 +129,7 @@ const AddQuestion = () => {
                 as="select"
                 value={complexity}
                 onChange={(e) => setComplexity(e.target.value)}
+                disabled={isSubmitting}
               >
                 <option value="easy">Easy</option>
                 <option value="medium">Medium</option>
@@ -142,12 +150,14 @@ const AddQuestion = () => {
                 }))}
                 onChange={handleCategoryChange}
                 placeholder="Select categories..."
+                isDisabled={isSubmitting}
               />
             </Form.Group>
-            <Button variant="primary" type="submit" className="mt-3">
+            <Button disabled={isSubmitting} variant="primary" type="submit" className="mt-3">
               Add Question
             </Button>
             <Button
+              disabled={isSubmitting}
               variant="secondary"
               className="mt-3 ms-2"
               onClick={() => navigate(-1)} // Navigate back to the previous page
