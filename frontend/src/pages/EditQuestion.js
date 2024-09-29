@@ -154,9 +154,9 @@ const EditQuestion = () => {
             required
             disabled={isSubmitting}
           >
-            <option value="easy">Easy</option>
-            <option value="medium">Medium</option>
-            <option value="hard">Hard</option>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
           </Form.Control>
         </Form.Group>
 
