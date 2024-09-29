@@ -1,94 +1,97 @@
+// src/pages/EditQuestion.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
+import { Form, Button, Badge, Container, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import './EditQuestion.css';
 
 const EditQuestion = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // Get question ID from URL
   const navigate = useNavigate();
   const [question, setQuestion] = useState(null);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [complexity, setComplexity] = useState('');
+  const [complexity, setComplexity] = useState('easy');
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categoriesDict, setCategoriesDict] = useState({});
   const [error, setError] = useState(null);
+
+  const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
+  const [loading, setLoading] = useState(true);
 
   const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
-    const fetchQuestion = async () => {
+    const fetchQuestionAndCategories = async () => {
       try {
-        const response = await fetch(`${baseUrl}/questions/${id}`);
-        const data = await response.json();
-        if (!response.ok) {
+        // Fetch question details
+        const questionResponse = await fetch(`${baseUrl}/questions/${id}`);
+        const questionData = await questionResponse.json();
+        if (!questionResponse.ok) {
           throw new Error
-          (`Failed to fetch question: ${response.status} ${response.statusText} - ${data.message}`);
+          (`Failed to fetch question: ${questionResponse.status} ${questionResponse.statusText} - ${questionData.message}`);
         }
         
-        setQuestion(data.data);
-        setTitle(data.data.title);
-        setDescription(data.data.description);
-        setComplexity(data.data.complexity);
-        setSelectedCategories(data.data.categories); // Set existing categories
+        setQuestion(questionData.data);
+        setTitle(questionData.data.title);
+        setDescription(questionData.data.description);
+        setComplexity(questionData.data.complexity);
+        setSelectedCategories(questionData.data.categories); // Set selected categories as IDs initially
+
+        // Fetch categories details
+        const categoriesResponse = await fetch(`${baseUrl}/categories`);
+        const categoriesData = await categoriesResponse.json();
+        if (!categoriesResponse.ok) {
+          throw new Error
+          (`Failed to fetch categories: ${categoriesResponse.status} ${categoriesResponse.statusText} - ${categoriesData.message}`);
+        }
+        // Create a dictionary for quick lookup of category names by ID
+        const categoriesLookup = categoriesData.data.reduce((acc, category) => {
+          acc[category.id] = category.name;
+          return acc;
+        }, {});
+        setCategoriesDict(categoriesLookup); // Save dictionary for lookup
+
+        // Prepare select options for categories
+        const options = categoriesData.data.map((category) => ({
+          value: category.id,
+          label: category.name,
+        }));
+        setCategories(options); // Set the options for the dropdown
+
+        setLoading(false);
+
       } catch (error) {
-        console.error('Error fetching question:', error);
+        console.error('Error fetching question or categories:', error);
         setError(error.message);
-      } finally {
         setLoading(false);
       }
     };
 
-    const fetchCategories = async () => {
-      try {
-        const response = await fetch(`${baseUrl}/categories`);
-        const data = await response.json();
-        if (!response.ok) {
-          throw new Error
-          (`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
-        }
-        setCategories(data.data);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-        setError(error.message);
-      }
-    };
-
-    fetchQuestion();
-    fetchCategories();
+    fetchQuestionAndCategories();
   }, [id, baseUrl]);
 
   const handleCategoryChange = (selectedOptions) => {
-    setSelectedCategories(selectedOptions.map((option) => option.value));
+    setSelectedCategories(selectedOptions.map(option => option.value));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (selectedCategories.length === 0) {
-      setError('Please select at least one category.');
-      return;
-    }
-
-    // Map selected category names to category IDs for submission
-    const selectedCategoryIds = selectedCategories.map((name) => {
-      const category = categories.find((cat) => cat.name === name);
-      return category ? category.id : null;
-    }).filter((id) => id); // Filter out null/undefined IDs
-
+    setSubmitting(true);
     const updatedQuestion = {
       title,
       description,
       complexity,
-      categories: selectedCategoryIds, // Use category IDs for submission
+      categories: selectedCategories, // Convert selected categories to IDs
     };
 
     try {
       const response = await fetch(`${baseUrl}/questions/${id}`, {
-        method: 'PATCH', // Use PATCH method
-        headers: { 'Content-Type': 'application/json' },
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(updatedQuestion),
       });
 
@@ -98,11 +101,14 @@ const EditQuestion = () => {
         (`Error updating question: ${response.status} ${response.statusText} - ${result.message}`);
       }
       alert(result.message);
-      navigate(-1); // Go back to the previous page after updating
+      // Navigate back to the question details page after successful update
+      navigate(`/questions/${id}`);
       
     } catch (error) {
-      console.error('Error updating question:', error); // Updated error message
+      console.error('Error updating question:', error);
       setError(error.message);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -113,69 +119,73 @@ const EditQuestion = () => {
 
   return (
     <Container className="edit-question-page">
-      <Row>
-        <Col>
-          <h2>Edit Question</h2>
-          {error && <Alert variant="danger">{error}</Alert>} {/* Display error message */}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group controlId="title">
-              <Form.Label>Title</Form.Label>
-              <Form.Control
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="description" className="mt-3">
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                as="textarea"
-                rows={5}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              />
-            </Form.Group>
-            <Form.Group controlId="complexity" className="mt-3">
-              <Form.Label>Complexity</Form.Label>
-              <Form.Control
-                as="select"
-                value={complexity}
-                onChange={(e) => setComplexity(e.target.value)}
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </Form.Control>
-            </Form.Group>
-            <Form.Group controlId="categories" className="mt-3">
-              <Form.Label>Categories</Form.Label>
-              <Select
-                isMulti
-                options={categories.map((category) => ({
-                  value: category.name,
-                  label: category.name,
-                }))}
-                value={selectedCategories.map((name) => ({
-                  value: name,
-                  label: name,
-                }))}
-                onChange={handleCategoryChange}
-                placeholder="Select categories..."
-              />
-            </Form.Group>
-            <Button variant="primary" type="submit" className="mt-3">
-              Save Changes
-            </Button>
-            <Button
-              variant="secondary"
-              className="mt-3 ms-2"
-              onClick={() => navigate(-1)} // Navigate back to the previous page
-            >
-              Cancel
-            </Button>
-          </Form>
-        </Col>
-      </Row>
+      <h2>Edit Question</h2>
+      {error && <Alert variant="danger">{error}</Alert>} {/* Display error message */}
+      <Form onSubmit={handleSubmit}>
+        <Form.Group controlId="formQuestionTitle">
+          <Form.Label>Title</Form.Label>
+          <Form.Control
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            disabled={isSubmitting}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="formQuestionDescription">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            as="textarea"
+            rows={5}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            disabled={isSubmitting}
+          />
+        </Form.Group>
+
+        <Form.Group controlId="formQuestionComplexity">
+          <Form.Label>Complexity</Form.Label>
+          <Form.Control
+            as="select"
+            value={complexity}
+            onChange={(e) => setComplexity(e.target.value)}
+            required
+            disabled={isSubmitting}
+          >
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+          </Form.Control>
+        </Form.Group>
+
+        <Form.Group controlId="formQuestionCategories">
+          <Form.Label>Categories</Form.Label>
+          <Select
+            isMulti
+            value={categories.filter(option => selectedCategories.includes(option.value))}
+            options={categories.filter(option => !selectedCategories.includes(option.value))}
+            onChange={handleCategoryChange}
+            placeholder="Select categories..."
+            isDisabled={isSubmitting}
+          />
+          <div className="selected-categories mt-2">
+            {selectedCategories.map((categoryId) => (
+              <Badge key={categoryId} className="me-1 mb-1" style={{ backgroundColor: '#D6BCFA', color: '#fff' }}>
+                {categoriesDict[categoryId]} {/* Display category name */}
+              </Badge>
+            ))}
+          </div>
+        </Form.Group>
+
+        <Button disabled={isSubmitting} variant="primary" type="submit" className="mt-3">
+          Save Changes
+        </Button>
+        <Button disabled={isSubmitting} variant="secondary" onClick={() => navigate(-1)} className="mt-3 ms-2">
+          Cancel
+        </Button>
+      </Form>
     </Container>
   );
 };

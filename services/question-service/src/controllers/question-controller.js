@@ -92,7 +92,7 @@ export async function updateQuestion(req, res) {
         question.categories = categories
       }
 
-      const isDuplicate = await _checkDuplicateQuestion(title, description);
+      const isDuplicate = await _checkDuplicateQuestion(title, description, questionId);
       if (isDuplicate) {
         return res.status(400).json(
           { message: "The question with same title and description already exists." });
