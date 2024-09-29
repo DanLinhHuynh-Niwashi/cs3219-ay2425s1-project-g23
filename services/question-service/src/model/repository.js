@@ -111,7 +111,7 @@ export async function deleteQuestionById(id) {
 }
 
 // Check for duplicate question
-export async function checkDuplicateQuestion(id, title, description) {
+export async function checkDuplicateQuestion(title, description, id) {
   try {
     const existingQuestion = await Question.findOne({
       title,
