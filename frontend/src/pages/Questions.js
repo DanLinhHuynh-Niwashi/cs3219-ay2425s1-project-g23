@@ -17,8 +17,7 @@ const Questions = () => {
   const navigate = useNavigate();
 
   // Set the base URL for API calls
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
-
+  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
   useEffect(() => {
     const fetchQuestions = async () => {
       try {

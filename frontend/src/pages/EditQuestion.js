@@ -1,7 +1,7 @@
 // src/pages/EditQuestion.js
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Form, Button, Badge, Container } from 'react-bootstrap';
+import { Form, Button, Badge, Container, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import './EditQuestion.css';
 
@@ -18,17 +18,19 @@ const EditQuestion = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchQuestionAndCategories = async () => {
       try {
         // Fetch question details
         const questionResponse = await fetch(`${baseUrl}/questions/${id}`);
-        if (!questionResponse.ok) {
-          throw new Error(`Error fetching question: ${questionResponse.statusText}`);
-        }
         const questionData = await questionResponse.json();
+        if (!questionResponse.ok) {
+          throw new Error
+          (`Failed to fetch question: ${questionResponse.status} ${questionResponse.statusText} - ${questionData.message}`);
+        }
+        
         setQuestion(questionData.data);
         setTitle(questionData.data.title);
         setDescription(questionData.data.description);
@@ -37,11 +39,11 @@ const EditQuestion = () => {
 
         // Fetch categories details
         const categoriesResponse = await fetch(`${baseUrl}/categories`);
-        if (!categoriesResponse.ok) {
-          throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
-        }
         const categoriesData = await categoriesResponse.json();
-
+        if (!categoriesResponse.ok) {
+          throw new Error
+          (`Failed to fetch categories: ${categoriesResponse.status} ${categoriesResponse.statusText} - ${categoriesData.message}`);
+        }
         // Create a dictionary for quick lookup of category names by ID
         const categoriesLookup = categoriesData.data.reduce((acc, category) => {
           acc[category.id] = category.name;
@@ -57,6 +59,7 @@ const EditQuestion = () => {
         setCategories(options); // Set the options for the dropdown
 
         setLoading(false);
+
       } catch (error) {
         console.error('Error fetching question or categories:', error);
         setError(error.message);
@@ -73,6 +76,7 @@ const EditQuestion = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
     const updatedQuestion = {
       title,
       description,
@@ -89,12 +93,15 @@ const EditQuestion = () => {
         body: JSON.stringify(updatedQuestion),
       });
 
+      const result = await response.json();
       if (!response.ok) {
-        throw new Error('Failed to update question');
+        throw new Error
+        (`Error updating question: ${response.status} ${response.statusText} - ${result.message}`);
       }
-
+      alert(result.message);
       // Navigate back to the question details page after successful update
       navigate(`/questions/${id}`);
+      
     } catch (error) {
       console.error('Error updating question:', error);
       setError(error.message);
@@ -105,13 +112,11 @@ const EditQuestion = () => {
     return <div>Loading...</div>;
   }
 
-  if (error) {
-    return <div>{error}</div>;
-  }
 
   return (
     <Container className="edit-question-page">
       <h2>Edit Question</h2>
+      {error && <Alert variant="danger">{error}</Alert>} {/* Display error message */}
       <Form onSubmit={handleSubmit}>
         <Form.Group controlId="formQuestionTitle">
           <Form.Label>Title</Form.Label>

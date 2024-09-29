@@ -14,7 +14,7 @@ const Question = () => {
   const [error, setError] = useState(null); // Add an error state
 
   // Set the base URL for API calls
-  const baseUrl = process.env.REACT_APP_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
   // Fetch question and categories details from API
   useEffect(() => {
@@ -94,7 +94,7 @@ const Question = () => {
               <Card.Title className="mb-4" style={{ color: '#4A4A4A', fontWeight: 'bold' }}>
                 {question.title}
               </Card.Title>
-              <Card.Text style={{ color: '#4A4A4A' }}>
+              <Card.Text className="description" style={{ color: '#4A4A4A' }}>
                 <strong>Description:</strong> <br />
                 {question.description}
               </Card.Text>

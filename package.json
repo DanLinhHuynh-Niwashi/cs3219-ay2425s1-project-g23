@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "services/question-service"
+  ],
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:frontend": "cd ./frontend && npm start",
+    "start:backend": "cd ./services/question-service && npm start"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}

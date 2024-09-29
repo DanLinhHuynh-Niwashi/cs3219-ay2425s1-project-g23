@@ -5,12 +5,20 @@ import {
     findQuestionById as _findQuestionById,
     findAllQuestions as _findAllQuestions,
     updateQuestionById as _updateQuestionById,
+    checkDuplicateQuestion as _checkDuplicateQuestion
   } from "../model/repository.js";
 
 export async function createQuestion(req, res) {
   try {
     const { title, description, complexity, categories } = req.body;
     if (title && description && complexity && categories) {
+      
+      const isDuplicate = await _checkDuplicateQuestion(title, description);
+      if (isDuplicate) {
+        return res.status(400).json(
+          { message: "The question with same title and description already exists." });
+      }
+
       const createdQuestion = await _createQuestion(title, description, complexity, categories);
       return res.status(201).json({
         message: `Created new question successfully`,
@@ -83,6 +91,13 @@ export async function updateQuestion(req, res) {
       if (categories) {
         question.categories = categories
       }
+
+      const isDuplicate = await _checkDuplicateQuestion(title, description);
+      if (isDuplicate) {
+        return res.status(400).json(
+          { message: "The question with same title and description already exists." });
+      }
+      
       const updatedQuestion = await _updateQuestionById(questionId, question.title, question.description, question.complexity, question.categories);
       return res.status(200).json({
         message: `Updated question ${questionId}`,
