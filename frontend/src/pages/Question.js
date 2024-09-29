@@ -36,7 +36,7 @@ const Question = () => {
         const categoriesData = await categoriesResponse.json();
 
         // Create a dictionary for quick category name lookup by index
-        const categoriesLookup = categoriesData.data.reduce((acc, category, index) => {
+        const categoriesLookup = categoriesData.data.reduce((acc, category) => {
           acc[category.id] = category.name;
           return acc;
         }, {});
@@ -62,7 +62,7 @@ const Question = () => {
       if (!response.ok) {
         throw new Error(`Error deleting question: ${response.statusText}`);
       }
-      navigate('/questions'); // Navigate back to questions list after deletion
+      navigate('/questions', { replace: true }); // Navigate back to questions list after deletion
     } catch (error) {
       console.error('Error deleting question:', error);
       setError(error.message);
@@ -141,7 +141,7 @@ const Question = () => {
               <Button
                 variant="primary"
                 className="mt-3"
-                onClick={() => window.history.back()} // Go back to the questions list
+                onClick={() => navigate('/questions')} // Go back to the questions list
               >
                 Back to Questions List
               </Button>
