@@ -3,6 +3,7 @@
 .idea/
 .DS_Store
 *.log
+*node_modules/
 
 # Exclude environment files
 *.env
