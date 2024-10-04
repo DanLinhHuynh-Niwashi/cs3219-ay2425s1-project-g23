@@ -1,0 +1,42 @@
+version: '0.1'
+
+services:
+  question-service:
+    build: ./services/question-service
+    ports:
+      - "3001:3001"
+    environment:
+      DB_CLOUD_URI: ${QUESTION_DB_CLOUD_URI}     
+      DB_LOCAL_URI: ${QUESTION_DB_LOCAL_URI}    
+      ENV: ${ENV}                        
+    depends_on:
+      - question-db
+
+  question-db:
+    image: mongodb/mongodb-atlas-local
+    ports:
+      - "27018:27018"
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3002:3002"
+    environment:
+      DB_CLOUD_URI: ${USER_DB_CLOUD_URI}     
+      DB_LOCAL_URI: ${USER_DB_LOCAL_URI}    
+      ENV: ${ENV}                        
+    depends_on:
+      - user-db
+
+  user-db:
+    image: mongodb/mongodb-atlas-local
+    ports:
+      - "27019:27019"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - user-service
+      - question-service
