@@ -2,10 +2,14 @@ version: '0.1'
 
 services:
   question-service:
-    build: ./services/question-service
+    build: 
+      context: ./service/question-service
+      args:
+        - PORT=${QUESTION_PORT}
     ports:
-      - "3001:3001"
+      - "${QUESTION_PORT}:${QUESTION_PORT}"
     environment:
+      PORT: ${QUESTION_PORT}
       DB_CLOUD_URI: ${QUESTION_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${QUESTION_DB_LOCAL_URI}    
       ENV: ${ENV}                        
@@ -18,10 +22,14 @@ services:
       - "27018:27018"
 
   user-service:
-    build: ./services/user-service
+    build: 
+        context: ./services/user-service
+        args:
+          - PORT=${USER_PORT}
     ports:
-      - "3002:3002"
+      - "${USER_PORT}:${USER_PORT}"
     environment:
+      PORT: ${USER_PORT}
       DB_CLOUD_URI: ${USER_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${USER_DB_LOCAL_URI}    
       ENV: ${ENV}                        

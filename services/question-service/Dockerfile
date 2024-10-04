@@ -1,6 +1,8 @@
 # Dockerfile for question-service
 FROM node:20-alpine
 
+ARG PORT
+
 WORKDIR /app
 
 COPY package*.json ./
@@ -11,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Expose the service port
-EXPOSE 3001
+EXPOSE $PORT
 
 # Start the question service
 CMD ["npm", "start"]
