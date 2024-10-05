@@ -3,7 +3,7 @@ version: '0.1'
 services:
   question-service:
     build: 
-      context: ./service/question-service
+      context: ./services/question-service
       args:
         - PORT=${QUESTION_PORT}
     ports:
