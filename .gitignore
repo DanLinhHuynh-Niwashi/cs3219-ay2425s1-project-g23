@@ -7,3 +7,19 @@
 
 # Exclude environment files
 *.env
+
+# Node.js dependencies
+node_modules/
+
+# Build directories
+build/
+dist/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.swp
+
+# Output of npm pack
+*.tgz

@@ -1,0 +1,30 @@
+.question-detail-page {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 5px;
+  }
+  .description {
+    white-space: pre-wrap; /* Preserve whitespace and line breaks */
+  }
+  .card {
+    border: 1px solid #D6BCFA; /* Lilac border color */
+  }
+  
+  .card-title {
+    color: #4A4A4A; /* Darker text color */
+    font-weight: bold;
+  }
+  
+  .card-text {
+    color: #4A4A4A;
+  }
+  
+  .question-badge {
+    font-size: 14px;
+    padding: 5px;
+  }
+  
+  button {
+    font-size: 16px;
+  }
+  

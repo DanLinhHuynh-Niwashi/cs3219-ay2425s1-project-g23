@@ -2,6 +2,16 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## .env file instruction
+
+Make sure that your .env file is in the **same level** with package.json.
+
+Sample .env
+```
+REACT_APP_QUESTION_API_URL=http://localhost:{port}
+```
+Replace {port} with the port on which your question service would run. **Avoid port 3000** as our frontend will run there.
+
 ## Available Scripts
 
 In the project directory, you can run:
