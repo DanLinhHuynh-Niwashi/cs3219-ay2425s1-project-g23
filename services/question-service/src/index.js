@@ -5,6 +5,7 @@ import questionRoutes from './routes/question-routes.js';
 import categoryRoutes from './routes/category-routes.js';
 
 const app = express();
+let dbConnected = false;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -34,13 +35,20 @@ app.use('/questions', questionRoutes);
 app.use('/categories', categoryRoutes);
 
 app.get("/", (req, res, next) => {
-  console.log("Sending Greetings!");
-  res.json({
-    message: "Hello World from user-service",
-  });
+  if(!dbConnected) {
+    console.log("Database connection failed!");
+    res.status(503).json({
+      message: "Service is currently unavailable due to database connection issues.",
+    });
+  } else {
+    console.log("Sending Greetings!");
+    res.json({
+      message: "Hello World from question-service",
+    });
+  }
 });
 
-// Handle When No Route Match Is Found
+// Handle when no route match is found
 app.use((req, res, next) => {
   const error = new Error("Route Not Found");
   error.status = 404;
@@ -55,5 +63,10 @@ app.use((error, req, res, next) => {
     },
   });
 });
+
+// Function to update DB status message
+export const updateDBStatus = (isConnected) => {
+  dbConnected = isConnected;
+};
 
 export default app;
