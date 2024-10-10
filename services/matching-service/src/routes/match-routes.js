@@ -1,9 +1,15 @@
-import express from 'express';
-import { requestMatch, cancelMatch } from '../controllers/match-controller.js';
+import { handleMessage, handleDisconnect } from './controllers/websocket-match-controller.js';
 
-const router = express.Router();
+export function setupRoutes(wss) {
+    wss.on('connection', (ws) => {
+        console.log('New client connected');
 
-router.post('/', requestMatch); // Endpoint to request a match
-router.delete('/:userId', cancelMatch); // Endpoint to cancel a match
+        ws.on('message', (message) => {
+            handleMessage(ws, message);
+        });
 
-export default router;
+        ws.on('close', () => {
+            handleDisconnect(ws);
+        });
+    });
+}

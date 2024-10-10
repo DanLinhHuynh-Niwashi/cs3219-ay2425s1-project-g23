@@ -1,10 +1,15 @@
-import http from "http";
-import index from "./index.js";
-import "dotenv/config";
+import WebSocket from 'ws'; 
+import { setupRoutes } from './routes/match-routes.js'; // Import the setupRoutes function
 
-const port = process.env.PORT || 3003;
+const PORT = 8080; // Port for the WebSocket server
 
-const server = http.createServer(index);
+// Create a WebSocket server
+const wss = new WebSocket.Server({ port: PORT });
 
-server.listen(port);
-console.log("Matching service server listening on http://localhost:" + port);
+setupRoutes(wss);
+
+wss.on('error', (error) => {
+    console.error(`WebSocket error: ${error.message}`);
+});
+
+console.log(`WebSocket server is running on ws://localhost:${PORT}`);
