@@ -1,0 +1,34 @@
+# Node modules
+node_modules/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment variables
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE and editor-specific files
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+
+# Miscellaneous
+*.pid
+*.seed
+
+# Coverage reports
+coverage/
+
+# Dependency directories for monorepos (if applicable)
+packages/*/node_modules/
