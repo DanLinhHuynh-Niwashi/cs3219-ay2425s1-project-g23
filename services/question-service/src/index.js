@@ -36,7 +36,7 @@ app.use('/categories', categoryRoutes);
 app.get("/", (req, res, next) => {
   console.log("Sending Greetings!");
   res.json({
-    message: "Hello World from user-service",
+    message: "Hello World from question-service",
   });
 });
 
