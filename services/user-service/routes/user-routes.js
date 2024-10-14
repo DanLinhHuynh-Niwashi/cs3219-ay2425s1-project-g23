@@ -10,6 +10,7 @@ import {
   updateUserPrivilege,
   updateUserProfile,
   resetPassword,
+  getUserProfile,
 } from "../controller/user-controller.js";
 import { verifyAccessToken, verifyIsAdmin, verifyIsOwnerOrAdmin } from "../middleware/basic-access-control.js";
 
@@ -33,5 +34,6 @@ router.post("/reset-password", resetPassword);
 
 router.patch('/:id/user-profile/', updateUserProfile);
 
+router.get('/:id/user-profile', verifyAccessToken, verifyIsOwnerOrAdmin, getUserProfile);
 
 export default router;
