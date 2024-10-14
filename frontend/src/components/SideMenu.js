@@ -17,7 +17,7 @@ const SideMenu = () => {
         Start Session
       </Button>
       <Nav className="flex-column">
-        <Nav.Link className="menu-item" onClick={() => alert('Profile clicked!')}>
+        <Nav.Link className="menu-item" onClick={() => navigate('/profile')}>
           <FaUser className="icon" /> Profile
         </Nav.Link>
         <Nav.Link className="menu-item" onClick={() => navigate('/questions')}>

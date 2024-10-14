@@ -6,6 +6,7 @@ const Questions = lazy(() => import('./pages/Questions'));
 const AddQuestion = lazy(() => import('./pages/AddQuestion'));
 const Question = lazy(() => import('./pages/Question'));
 const EditQuestion = lazy(() => import('./pages/EditQuestion'));
+const Profile = lazy(() => import('./pages/Profile'));
 //const NotFound = lazy(() => import('./pages/NotFound')); // Fallback for undefined routes
 
 const AppRoutes = () => {
@@ -14,7 +15,7 @@ const AppRoutes = () => {
   // Redirect to "/questions" on app load
   useEffect(() => {
     if (window.location.pathname === '/') {
-      navigate('/questions');
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -29,6 +30,8 @@ const AppRoutes = () => {
         
         {/* Edit Question View */}
         <Route path="/questions/:id/edit" element={<EditQuestion />} />
+
+        <Route path="/profile" element={<Profile />} />
 
         <Route path="*" element={<div>Not Found</div>} />
       </Routes>

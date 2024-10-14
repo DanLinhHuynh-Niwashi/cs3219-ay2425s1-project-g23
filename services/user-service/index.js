@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import userRoutes from "./routes/user-routes.js";
 import authRoutes from "./routes/auth-routes.js";
@@ -8,13 +9,17 @@ const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors()); // config cors so that front-end can use
+app.use(cors({
+  origin: 'http://localhost:3000', // The URL of your frontend
+  credentials: true, // Allows cookies and credentials
+}));
 app.options("*", cors());
+app.use(cookieParser());
 
 // To handle CORS Errors
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // "*" -> Allow all links to access
-
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // "*" -> Allow all links to access
+  res.header("Access-Control-Allow-Credentials", "true"); // Allow cookies/credentials
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization",
