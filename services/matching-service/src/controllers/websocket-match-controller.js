@@ -1,10 +1,15 @@
-import { addToQueue, removeFromQueue, findMatch } from "../model/mock-queue.js";
+import { addToQueue, removeFromQueue, findMatch,
+    isUserInActiveRequests,
+    removeFromActiveRequests
+ } from "../model/message-queue.js";
 import 'ws';
 
 const TIMEOUT = 30000; // 30 seconds timeout for finding a match
+const INVITATION_TIMEOUT = 10000; // 10 seconds timeout for direct match
 
 // Store WebSocket clients (users)
-const clients = new Map();
+const requestClients = new Map();
+const connectedClients = new Map();
 
 export function handleMessage(ws, message) {
     const data = JSON.parse(message);
@@ -28,8 +33,8 @@ async function handleJoinQueue(ws, data) {
     const { userId, topic, difficulty } = data;
     const request = { userId, ws, topic, difficulty };
 
-    // Check if the user already has a matching request in progress
-    if (clients.has(userId) && clients.get(userId).user.isMatching) {
+    // Check if the user already has an active request
+    if (await isUserInActiveRequests(userId)) {
         ws.send(JSON.stringify({
             status: 500,
             message: 'You already have a matching request in progress.'
@@ -38,43 +43,53 @@ async function handleJoinQueue(ws, data) {
     }
 
     // Store user info on the WebSocket object for easy access later
-    ws.user = { userId, topic, difficulty, isMatching: true };
+    ws.user = { userId, topic, difficulty };
 
-    clients.set(userId, ws); // Store WebSocket connection for the user in the clients Map
+    requestClients.set(userId, ws); // Store WebSocket connection for the user in the clients Map
     
-    // Add user to the queue
-    addToQueue(request);
+    try {
+        await addToQueue(request);
+        // Try to match users
+        const matchFound = await matchUsers(topic, difficulty);
 
-    // Try to match users immediately
-    const matchFound = await matchUsers(topic, difficulty);
-
-    // If no match is found, set a timeout to ask the user to stay or leave
-    if (!matchFound) {
+        // If no match found, set a timeout to ask the user to stay or leave
+        if (!matchFound) {
+            ws.send(JSON.stringify({
+                status: 100,
+                message: `Matching...`,
+                user: ws.user
+            }));
+            await setMatchTimeout(ws, topic, difficulty);
+        }
+    } catch (error) {
+        console.error('Error joining queue:', error);
         ws.send(JSON.stringify({
-            status: 100,
-            message: `Matching...`,
-            user: ws.user
+            status: 500,
+            message: 'An error occurred while joining the queue.'
         }));
-        await setMatchTimeout(ws, topic, difficulty);
     }
 }
 
 // Attempt to match users
 async function matchUsers(topic, difficulty) {
-    const match = findMatch(topic, difficulty);
-    if (match) {
-        notifyMatch(match); // Notify users of the match
-        return true; // Match found
+    try {
+        const match = await findMatch(topic, difficulty);
+        if (match) {
+            notifyMatch(match); // Notify users of the match
+            return true; // Match found
+        }
+        return false; // No match found
+    } catch (error) {
+        console.error('Error finding a match:', error);
+        return false;
     }
-    return false; // No match found
 }
 
 // Notify both users of a match
 function notifyMatch(match) {
     const { request1, request2, topic, difficulty } = match; // Assume match contains user1 and user2 info
-
-    const user1Ws = clients.get(request1.userId); // Retrieve user1's WebSocket from clients Map
-    const user2Ws = clients.get(request2.userId); // Retrieve user2's WebSocket from clients Map
+    const user1Ws = requestClients.get(request1.userId); // Retrieve user1's WebSocket from clients Map
+    const user2Ws = requestClients.get(request2.userId); // Retrieve user2's WebSocket from clients Map
 
     if (user1Ws && user2Ws) {
         user1Ws.send(JSON.stringify({
@@ -84,7 +99,7 @@ function notifyMatch(match) {
             topic: topic,
             difficulty: difficulty
         }));
-        
+
         user2Ws.send(JSON.stringify({
             status: 200,
             message: `You have been matched with ${request1.userId} on topic ${topic}.`,
@@ -136,30 +151,38 @@ async function setMatchTimeout(ws, topic, difficulty) {
 }
 
 // Handle user leaving the queue
-function handleLeaveQueue(ws, data) {
+async function handleLeaveQueue(ws, data) {
     const { userId, topic, difficulty } = data;
     const request = { userId, topic, difficulty };
 
-    removeFromQueue(request);
+    try {
+        await removeFromQueue(request);
 
-    // Remove the user from the clients Map
-    clients.delete(userId);
+        // Remove the user from the clients Map
+        requestClients.delete(userId);
 
-    // Notify user they have left the queue
-    if (ws.user) {
+        // Notify user they have left the queue
+        if (ws.user) {
+            ws.send(JSON.stringify({
+                status: 200,
+                message: 'You have left the queue.'
+            }));
+        }
+    } catch (error) {
+        console.error('Error removing user from the queue:', error);
         ws.send(JSON.stringify({
-            status: 200,
-            message: 'You have left the queue.'
+            status: 500,
+            message: 'An error occurred while leaving the queue.'
         }));
     }
 }
 
 // Handle user disconnect
-export function handleDisconnect(ws) {
+export async function handleDisconnect(ws) {
     console.log('Client disconnected');
     if (ws.user) {
-        handleLeaveQueue(ws, { userId: ws.user.userId, topic: ws.user.topic, difficulty: ws.user.difficulty });
+        await handleLeaveQueue(ws, { userId: ws.user.userId, topic: ws.user.topic, difficulty: ws.user.difficulty });
     }
     // Ensure that the user is removed from the clients Map on disconnect
-    clients.delete(ws.user?.userId);
+    requestClients.delete(ws.user?.userId);
 }
