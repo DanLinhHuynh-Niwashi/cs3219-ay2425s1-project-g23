@@ -87,7 +87,7 @@ async function matchUsers(topic, difficulty) {
 
 // Notify both users of a match
 function notifyMatch(match) {
-    const { request1, request2, topic, difficulty } = match; // Assume match contains user1 and user2 info
+    const { request1, request2, topic, difficulty } = match;
     const user1Ws = requestClients.get(request1.userId); // Retrieve user1's WebSocket from clients Map
     const user2Ws = requestClients.get(request2.userId); // Retrieve user2's WebSocket from clients Map
 
