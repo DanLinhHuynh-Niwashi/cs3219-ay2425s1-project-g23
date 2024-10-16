@@ -1,4 +1,4 @@
-import { handleMessage, handleDisconnect } from './controllers/websocket-match-controller.js';
+import { handleMessage, handleDisconnect } from '../controllers/websocket-match-controller.js';
 
 export function setupRoutes(wss) {
     wss.on('connection', (ws) => {
