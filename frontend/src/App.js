@@ -6,6 +6,7 @@ import AppRoutes from './routes'; // Import the centralized routes
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import 'bootstrap/dist/css/bootstrap.min.css'
+import ProtectedRoutes from './utils/ProtectedRoutes';
 
 function App() {
   return (
@@ -14,8 +15,10 @@ function App() {
         <Route path="/login" element={<Login/>} />
         <Route path="/signup" element={<Signup/>} />
         {/* All routes wrapped in Layout */}
-        <Route path="/*" element={<Layout />}>
-          <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
+        <Route element={<ProtectedRoutes/>}>
+          <Route path="/*" element={<Layout />}>
+            <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
+          </Route>
         </Route>
       </Routes>
     </Router>

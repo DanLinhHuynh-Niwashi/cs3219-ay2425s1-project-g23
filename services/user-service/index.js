@@ -14,7 +14,6 @@ app.use(cors({
   origin: 'http://localhost:3000', // The URL of your frontend
   credentials: true, // Allows cookies and credentials
 }));
-app.options("*", cors());
 app.use(cookieParser());
 
 // To handle CORS Errors
