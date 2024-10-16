@@ -48,3 +48,22 @@ services:
     depends_on:
       - user-service
       - question-service
+      - matching-service
+  matching-service:
+    build: 
+      context: ./services/matching-service
+      args:
+        - PORT=${MATCHING_PORT}
+    ports:
+      - "${MATCHING_PORT}:${MATCHING_PORT}"
+    environment:
+      PORT: ${MATCHING_PORT}
+      REDIS_HOST: redis
+      ENV: ${ENV}
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
