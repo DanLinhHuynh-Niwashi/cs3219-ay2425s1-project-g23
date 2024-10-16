@@ -16,12 +16,14 @@ export async function handleLogin(req, res) {
       if (!match) {
         return res.status(401).json({ message: "Wrong email and/or password" });
       }
-
+      console.log(process.env.JWT_SECRET)
       const accessToken = jwt.sign({
-        id: user.id,
+        id: user._id,
       }, process.env.JWT_SECRET, {
         expiresIn: "1d",
       });
+      res.cookie('token', accessToken);
+      res.cookie('user_id', user._id.toString());
       return res.status(200).json({ message: "User logged in", data: { accessToken, ...formatUserResponse(user) } });
     } catch (err) {
       return res.status(500).json({ message: err.message });

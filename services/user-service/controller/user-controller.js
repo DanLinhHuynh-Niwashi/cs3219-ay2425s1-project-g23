@@ -83,7 +83,7 @@ export async function createUserProfile(req, res) {
         data: newProfile,
       });
     } else {
-      return res.status(400).json({ message: "Name is a required." });
+      return res.status(400).json({ message: "Name is required." });
     }
   } catch (error) {
     console.error(error);
@@ -275,6 +275,24 @@ export async function updateUserProfile(req, res) {
   }
 }
 
+export async function getUserProfile(req, res) {
+  try {
+    const userId = req.params.id;
+    if (!isValidObjectId(userId)) {
+      return res.status(404).json({ message: `User ${userId} not found` });
+    }
+
+    const userProfile = await _findUserProfileById(userId);
+    if (!userProfile) {
+      return res.status(404).json({ message: `User profile not found` });
+    } else {
+      return res.status(200).json({ message: `Found user profile`, data: formatProfileResponse(userProfile) });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when getting user profile!" });
+  }
+}
 
 export function formatUserResponse(user) {
   return {
@@ -284,4 +302,16 @@ export function formatUserResponse(user) {
     isAdmin: user.isAdmin,
     createdAt: user.createdAt,
   };
+}
+
+export function formatProfileResponse(profile) {
+  return {
+    name: profile.name,
+    bio: profile.bio,
+    gender: profile.gender,
+    location: profile.location,
+    proficiency: profile.proficiency,
+    linkedin: profile.linkedin,
+    github: profile.github,
+  }
 }
