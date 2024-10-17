@@ -41,24 +41,19 @@ services:
     ports:
       - "27019:27019"
 
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000" 
-    depends_on:
-      - user-service
-      - question-service
-      - matching-service
   matching-service:
     build: 
-      context: ./services/matching-service
-      args:
+        context: ./services/matching-service
+        args:
         - PORT=${MATCHING_PORT}
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
     ports:
       - "${MATCHING_PORT}:${MATCHING_PORT}"
     environment:
       PORT: ${MATCHING_PORT}
       REDIS_HOST: redis
+      REDIS_PORT: 6379
       ENV: ${ENV}
     depends_on:
       - redis
@@ -67,3 +62,14 @@ services:
     image: redis:alpine
     ports:
       - "6379:6379"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000" 
+    depends_on:
+      - user-service
+      - question-service
+      - matching-service
+
+  

@@ -2,6 +2,8 @@
 FROM node:20-alpine
 
 ARG PORT
+ARG REDIS_HOST
+ARG REDIS_PORT
 
 WORKDIR /app
 
@@ -15,5 +17,5 @@ COPY . .
 # Expose the service port
 EXPOSE $PORT
 
-# Start the question service
+# Start the service
 CMD ["npm", "start"]
