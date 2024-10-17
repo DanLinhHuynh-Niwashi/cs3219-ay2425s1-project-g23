@@ -97,7 +97,7 @@ function EditProfile() {
                     <Col md={9}>
                         <Row>
                             <Form.Group controlId="username">
-                                <Form.Label>Name</Form.Label>
+                                <Form.Label>Name <span style={{ color: 'red' }}>*</span></Form.Label>
                                 <Form.Control
                                     type="text"
                                     value={profile.name}
@@ -108,7 +108,7 @@ function EditProfile() {
                         </Row>
                         <Row>
                             <Form.Group controlId="bio">
-                                <Form.Label>Bio</Form.Label>
+                                <Form.Label>Bio <span style={{ color: 'red' }}>*</span></Form.Label>
                                 <Form.Control
                                     as="textarea"
                                     rows={4}
@@ -123,7 +123,7 @@ function EditProfile() {
                 <Row className="mb-4">
                     <Col>
                         <Form.Group controlId="gender">
-                            <Form.Label>Gender</Form.Label>
+                            <Form.Label>Gender <span style={{ color: 'red' }}>*</span></Form.Label>
                             <Form.Control
                                 as="select"
                                 required
@@ -142,7 +142,6 @@ function EditProfile() {
                             <Form.Control
                                 type="text"
                                 value={profile.location}
-                                required
                                 onChange={(e) => setProfile({ ...profile, location: e.target.value })}
                             />
                         </Form.Group>
@@ -155,17 +154,17 @@ function EditProfile() {
                             <Form.Control
                                 type="text"
                                 value={profile.linkedin}
-                                required
                                 onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
                             />
                         </Form.Group>
                     </Col>
                     <Col>
                         <Form.Group controlId="proficiency">
-                            <Form.Label>Proficiency</Form.Label>
+                            <Form.Label>Proficiency <span style={{ color: 'red' }}>*</span></Form.Label>
                             <Form.Control
                                 as="select"
                                 value={profile.proficiency}
+                                required
                                 onChange={(e) => setProfile({ ...profile, proficiency: e.target.value })}
                             >
                                 <option value="Beginner">Beginner</option>
