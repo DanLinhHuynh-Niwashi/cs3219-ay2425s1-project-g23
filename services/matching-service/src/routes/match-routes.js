@@ -12,4 +12,8 @@ export function setupRoutes(wss) {
             handleDisconnect(ws);
         });
     });
+
+    wss.on('error', (error) => {
+        console.error(`WebSocket error: ${error.message}`);
+    });
 }
