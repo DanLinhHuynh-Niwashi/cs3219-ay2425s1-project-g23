@@ -286,7 +286,7 @@ export async function getUserProfile(req, res) {
     if (!userProfile) {
       return res.status(404).json({ message: `User profile not found` });
     } else {
-      return res.status(200).json({ message: `Found user profile`, data: formatUserResponse(userProfile) });
+      return res.status(200).json({ message: `Found user profile`, data: formatProfileResponse(userProfile) });
     }
   } catch (err) {
     console.error(err);
@@ -302,4 +302,16 @@ export function formatUserResponse(user) {
     isAdmin: user.isAdmin,
     createdAt: user.createdAt,
   };
+}
+
+export function formatProfileResponse(profile) {
+  return {
+    name: profile.name,
+    bio: profile.bio,
+    gender: profile.gender,
+    location: profile.location,
+    proficiency: profile.proficiency,
+    linkedin: profile.linkedin,
+    github: profile.github,
+  }
 }

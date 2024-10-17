@@ -4,6 +4,7 @@ import { Button, Container, Row, Col } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import './AdminPanel.css';
 
+
 const AdminPanel = ({ addQuestion, editQuestion, deleteQuestion }) => {
   const navigate = useNavigate();
 
