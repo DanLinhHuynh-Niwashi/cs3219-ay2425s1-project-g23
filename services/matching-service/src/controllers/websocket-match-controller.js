@@ -1,11 +1,9 @@
 import { addToQueue, removeFromQueue, findMatch,
-    isUserInActiveRequests,
-    removeFromActiveRequests
- } from "../model/message-queue.js";
+    isUserInActiveRequests } from "../model/message-queue.js";
 import 'ws';
 
 const TIMEOUT = 30000; // 30 seconds timeout for finding a match
-const INVITATION_TIMEOUT = 10000; // 10 seconds timeout for direct match
+const RESPONSE_TIMEOUT = 10000; // 10 seconds timeout for direct match
 
 // Store WebSocket clients (users)
 const requestClients = new Map();
@@ -125,35 +123,48 @@ function handleStayInQueue(ws) {
 
 // Set a timeout for users to choose to stay or leave
 async function setMatchTimeout(ws, topic, difficulty) {
-    return new Promise((resolve) => {
-        const timer = setTimeout(() => {
-            // Notify the user that no match was found within the timeout period
-            ws.send(JSON.stringify({
-                status: 500,
-                message: 'No match found within 30 seconds. Do you want to stay in the queue for another attempt?'
-            }));
+    // Store the timer on the WebSocket object
+    ws.matchTimeout = setTimeout(() => {
+        console.log("Set timer");
+        // Notify the user that no match was found within the timeout period
+        ws.send(JSON.stringify({
+            status: 500,
+            message: 'No match found within 30 seconds. Do you want to stay in the queue for another attempt?'
+        }));
 
-            // Listen for user response to stay or leave
-            ws.on('message', (msg) => {
-                const data = JSON.parse(msg);
-                if (data.event === 'stayInQueue') {
-                    clearTimeout(timer); // Clear timer if they choose to stay
-                    handleStayInQueue(ws); // Attempt to find a match again
-                    resolve();
-                } else if (data.event === 'leaveQueue') {
-                    clearTimeout(timer); // Clear timer if they choose to leave
-                    handleLeaveQueue(ws, { userId: ws.user.userId, topic, difficulty });
-                    resolve();
-                }
-            });
-        }, TIMEOUT); // 30 seconds
-    });
+        const responseTimeout = setTimeout(() => {
+            console.log("Response timeout, leaving the queue");
+            handleLeaveQueue(ws, { userId: ws.user.userId, topic, difficulty });
+        }, RESPONSE_TIMEOUT); // 10 seconds
+
+        // Listen for user response to stay or leave
+        ws.on('message', (msg) => {
+            const data = JSON.parse(msg);
+            if (data.event === 'stayInQueue') {
+                clearTimeout(ws.matchTimeout); // Clear timer if they choose to stay
+                handleStayInQueue(ws); // Attempt to find a match again
+            } else if (data.event === 'leaveQueue') {
+                // Notify the user that no match was found within the timeout period
+                console.log("Clear timeout");
+                clearTimeout(ws.matchTimeout); // Clear timer if they choose to leave
+                handleLeaveQueue(ws, { userId: ws.user.userId, topic, difficulty });
+            }
+        });
+
+        
+    }, TIMEOUT); // 30 seconds
 }
 
 // Handle user leaving the queue
 async function handleLeaveQueue(ws, data) {
     const { userId, topic, difficulty } = data;
     const request = { userId, topic, difficulty };
+
+    // Clear the match timeout if it exists
+    if (ws.matchTimeout) {
+        clearTimeout(ws.matchTimeout);
+        delete ws.matchTimeout; // Clean up
+    }
 
     try {
         await removeFromQueue(request);
@@ -176,6 +187,7 @@ async function handleLeaveQueue(ws, data) {
         }));
     }
 }
+
 
 // Handle user disconnect
 export async function handleDisconnect(ws) {
