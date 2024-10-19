@@ -12,7 +12,7 @@ services:
       PORT: ${QUESTION_PORT}
       DB_CLOUD_URI: ${QUESTION_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${QUESTION_DB_LOCAL_URI}    
-      ENV: ${ENV}                        
+      ENV: ${ENV}                     
     depends_on:
       - question-db
 
@@ -32,7 +32,8 @@ services:
       PORT: ${USER_PORT}
       DB_CLOUD_URI: ${USER_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${USER_DB_LOCAL_URI}    
-      ENV: ${ENV}                        
+      ENV: ${ENV}       
+      JWT_SECRET: ${JWT_SECRET}                   
     depends_on:
       - user-db
 
@@ -41,10 +42,38 @@ services:
     ports:
       - "27019:27019"
 
+  matching-service:
+    build: 
+        context: ./services/matching-service
+        args:
+        - PORT=${MATCHING_PORT}
+        - REDIS_HOST=redis
+        - REDIS_PORT=6379
+    ports:
+      - "${MATCHING_PORT}:${MATCHING_PORT}"
+    environment:
+      PORT: ${MATCHING_PORT}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ENV: ${ENV}
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
   frontend:
     build: ./frontend
     ports:
       - "3000:3000" 
+    volumes:
+      - ./frontend:/app 
+      - /app/node_modules
     depends_on:
       - user-service
       - question-service
+      - matching-service
+
+  
