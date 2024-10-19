@@ -133,7 +133,10 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }
         setSubmitting(false);            
     };
-
+    const handleTopicChange = (selectedOption) => {
+        // Set topic to the label or value of the selected option
+        setTopic(selectedOption ? selectedOption.label : ''); // Handle case for no selection
+    };
     const handleLeaveQueue = () => {
         setSubmitting(true);
         setError(null);
@@ -179,20 +182,20 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                             <Form.Label className="me-3">Difficulty</Form.Label>
                             <div className="difficulty-buttons">
                                 <Button 
-                                    variant={difficulty === 'easy' ? 'success' : 'primary'}
-                                    onClick={() => setDifficulty('easy')}
+                                    variant={difficulty === 'Easy' ? 'success' : 'primary'}
+                                    onClick={() => setDifficulty('Easy')}
                                 >
                                     Easy
                                 </Button>
                                 <Button 
-                                    variant={difficulty === 'medium' ? 'warning' : 'primary'}
-                                    onClick={() => setDifficulty('medium')}
+                                    variant={difficulty === 'Medium' ? 'warning' : 'primary'}
+                                    onClick={() => setDifficulty('Medium')}
                                 >
                                     Medium
                                 </Button>
                                 <Button 
-                                    variant={difficulty === 'hard' ? 'danger' : 'primary'}
-                                    onClick={() => setDifficulty('hard')}
+                                    variant={difficulty === 'Hard' ? 'danger' : 'primary'}
+                                    onClick={() => setDifficulty('Hard')}
                                 >
                                     Hard
                                 </Button>
@@ -205,12 +208,11 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                         <div className="d-flex align-items-center">
                             <Form.Label className="me-3">Topics</Form.Label>
                             <Select
-                                isMulti
                                 options={categories}
                                 //value={topics}
                                 //onChange={setTopics}
-                                value={topic}
-                                onChange={setTopic}
+                                value={categories.find(category => category.label === topic)} // Find the selected option based on the topic
+                                onChange={handleTopicChange}
                                 className="basic-multi-select flex-grow-1"
                                 classNamePrefix="select"
                                 placeholder="Select topics..."

@@ -105,6 +105,9 @@ function notifyMatch(match) {
             topic: topic,
             difficulty: difficulty
         }));
+
+        handleLeaveQueue(user1Ws, request1)
+        handleLeaveQueue(user2Ws, request2)
     }
 }
 
@@ -125,6 +128,7 @@ function handleStayInQueue(ws) {
 async function setMatchTimeout(ws, topic, difficulty) {
     // Store the timer on the WebSocket object
     ws.matchTimeout = setTimeout(() => {
+        
         console.log("Set timer");
         // Notify the user that no match was found within the timeout period
         ws.send(JSON.stringify({
@@ -142,12 +146,13 @@ async function setMatchTimeout(ws, topic, difficulty) {
             const data = JSON.parse(msg);
             if (data.event === 'stayInQueue') {
                 clearTimeout(ws.matchTimeout); // Clear timer if they choose to stay
+                clearTimeout(responseTimeout); // Clear timer if they choose to stay
                 handleStayInQueue(ws); // Attempt to find a match again
             } else if (data.event === 'leaveQueue') {
                 // Notify the user that no match was found within the timeout period
                 console.log("Clear timeout");
                 clearTimeout(ws.matchTimeout); // Clear timer if they choose to leave
-                handleLeaveQueue(ws, { userId: ws.user.userId, topic, difficulty });
+                clearTimeout(responseTimeout); // Clear timer if they choose to stay
             }
         });
 
