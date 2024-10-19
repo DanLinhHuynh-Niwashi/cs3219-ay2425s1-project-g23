@@ -5,7 +5,6 @@ const PORT = process.env.REDIS_PORT || 6379
 const redisClient = createClient({
     url: `redis://${HOST}:${PORT}`,
 });
-
 const keys = [];
 const ACTIVE_REQUESTS_SET = 'activeRequests'; // Set for storing active user IDs
 
@@ -14,6 +13,7 @@ export async function initializeRedis() {
     // Listen for connection events
     redisClient.on('connect', () => {
         console.log(`Connected to Redis on redis://${HOST}:${PORT}`);
+        redisClient.flushAll();
     });
 
     redisClient.on('end', () => {

@@ -2,12 +2,16 @@
   "private": true,
   "workspaces": [
     "frontend",
-    "services/question-service"
+    "services/question-service",
+    "services/user-service",
+    "services/matching-service"
   ],
   "scripts": {
-    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start": "concurrently \"npm run start:question\" \"npm run start:user\" \"npm run start:matching\" \"npm run start:frontend\"",
     "start:frontend": "cd ./frontend && npm start",
-    "start:backend": "cd ./services/question-service && npm start"
+    "start:question": "cd ./services/question-service && npm start",
+    "start:matching": "cd ./services/matching-service && npm start",
+    "start:user": "cd ./services/user-service && npm start"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
