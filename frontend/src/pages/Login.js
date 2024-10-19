@@ -11,20 +11,24 @@ function Login() {
   const navigate = useNavigate()
   const baseUrl = process.env.REACT_APP_USER_API_URL || 'http://localhost:3002';
   const handleSubmit = async (event) => {
-    event.preventDefault();
-    console.log(login);
-    const response = await fetch(`${baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(login),
-      credentials: 'include',
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      alert(`Login credentials incorrect`);
-    } else {
-      navigate('/questions')
-    }
+    try {
+      event.preventDefault();
+      console.log(login);
+      const response = await fetch(`${baseUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(login),
+        credentials: 'include',
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(`Login credentials incorrect`);
+      } else {
+        navigate('/questions')
+      }
+    } catch (error) {
+      alert(`Can not connect to the server`);
+  }
   }
   return (
     <Container className="outer-container">

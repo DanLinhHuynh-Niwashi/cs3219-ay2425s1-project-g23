@@ -1,0 +1,18 @@
+/* src/pages/MatchingService.css */
+
+.modal-header,
+.modal-footer {
+    justify-content: center;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.difficulty-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 5px; /* Adjust spacing between buttons */
+}
