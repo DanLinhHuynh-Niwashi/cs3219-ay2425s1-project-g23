@@ -1,6 +1,6 @@
 import { WebSocketServer } from 'ws'; 
 import { setupRoutes } from './routes/match-routes.js'; // Import the setupRoutes function
-import { initializeRedis, flushRedis } from './controllers/message-queue-controller.js';
+import { initializeRedis, flushRedis } from './model/message-queue.js';
 import index from "./index.js";
 import http from "http";
 import "dotenv/config";
