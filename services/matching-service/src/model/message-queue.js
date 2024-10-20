@@ -5,7 +5,6 @@ const PORT = process.env.REDIS_PORT || 6379
 const redisClient = createClient({
     url: `redis://${HOST}:${PORT}`,
 });
-
 const keys = [];
 const ACTIVE_REQUESTS_SET = 'activeRequests'; // Set for storing active user IDs
 
@@ -14,6 +13,7 @@ export async function initializeRedis() {
     // Listen for connection events
     redisClient.on('connect', () => {
         console.log(`Connected to Redis on redis://${HOST}:${PORT}`);
+        redisClient.flushAll();
     });
 
     redisClient.on('end', () => {
@@ -51,8 +51,9 @@ export async function quitRedis() {
 // Log the current items in a specific queue
 async function logQueue(queueKey) {
     try {
-        const items = await redisClient.lRange(queueKey, 0, -1); // Get all items in the list
-        console.log(`Current items in the queue (${queueKey}):`, items);
+        const members = await redisClient.sMembers(ACTIVE_REQUESTS_SET);
+        console.log(`Active requests: ${members}`);
+        
     } catch (error) {
         console.error('Error retrieving queue items:', error);
     }
@@ -72,6 +73,7 @@ export async function addToActiveRequests(userId) {
 // Remove user ID from active requests
 export async function removeFromActiveRequests(userId) {
     console.log(`Removed ${userId} from the active queue.`)
+    logQueue(ACTIVE_REQUESTS_SET)
     await redisClient.sRem(ACTIVE_REQUESTS_SET, userId);
 }
 
@@ -88,7 +90,6 @@ export async function addToQueue(request) {
     
     await redisClient.rPush(queueKey, JSON.stringify(request)); // Push user to Redis list
     console.log(`User ${userId} added to ${difficulty} queue for topic ${topic}`);
-
     // Add user ID to active requests
     await addToActiveRequests(userId);
 }
@@ -113,7 +114,8 @@ export async function removeFromQueue(request) {
 // Function to find a match for a user request
 export async function findMatch(topic, difficulty) {
     const exactMatch = await getExactMatch(topic, difficulty);
-    return exactMatch || await getFallbackMatch(topic, difficulty); // Attempt fallback match if no exact match
+    if (exactMatch!=null) { return exactMatch; }
+    return await getFallbackMatch(topic, difficulty); // Attempt fallback match if no exact match
 }
 
 // Function to get an exact match in the same difficulty
@@ -137,6 +139,7 @@ async function getExactMatch(topic, difficulty) {
 
 // Function to attempt fallback match
 async function getFallbackMatch(topic, difficulty) {
+
     switch (difficulty) {
         case 'Hard':
             return await attemptFallbackMatch(topic, difficulty, 'Medium', 'Easy');
@@ -157,22 +160,27 @@ async function attemptFallbackMatch(topic, difficulty, firstFallback, secondFall
         redisClient.lRange(getQueueKey(topic, secondFallback), 0, -1),
     ]);
 
-    if (difficultyQueue.length >= 1) {
-        if (firstFallbackQueue.length >= 1) {
+    console.log(`Trying fallback match for ${topic} - Current queues: 
+        [${difficulty}: ${difficultyQueue.length}, ${firstFallback}: ${firstFallbackQueue.length}, ${secondFallback}: ${secondFallbackQueue.length}]`);
+
+    if (difficultyQueue.length > 0) {
+        if (firstFallbackQueue.length > 0) {
             return await processMatch(topic, difficulty, firstFallback, difficultyQueue, firstFallbackQueue);
         }
 
-        if (secondFallbackQueue.length >= 1) {
+        if (secondFallbackQueue.length > 0) {
             return await processMatch(topic, difficulty, secondFallback, difficultyQueue, secondFallbackQueue);
         }
     }
 
+    console.log(`No match found for ${topic} with difficulty ${difficulty}.`);
     return null; // No match found
 }
 
-// Function to process and remove matched users from queues
+// In the processMatch function, make sure to log the matched users
 async function processMatch(topic, difficulty, fallbackDifficulty, difficultyQueue, fallbackQueue) {
-    const [request1, request2] = [JSON.parse(difficultyQueue.shift()), JSON.parse(fallbackQueue.shift())];
+    const request1 = JSON.parse(difficultyQueue.shift());
+    const request2 = JSON.parse(fallbackQueue.shift());
     
     await updateQueue(getQueueKey(topic, difficulty), difficultyQueue);
     await updateQueue(getQueueKey(topic, fallbackDifficulty), fallbackQueue);
@@ -180,6 +188,7 @@ async function processMatch(topic, difficulty, fallbackDifficulty, difficultyQue
     console.log(`Matched ${request1.userId} with ${request2.userId} on topic ${topic} with difficulty ${fallbackDifficulty}`);
     return { request1, request2, topic, difficulty: fallbackDifficulty };
 }
+
 
 // Helper function to update the queue in Redis after processing
 async function updateQueue(queueKey, updatedQueue) {

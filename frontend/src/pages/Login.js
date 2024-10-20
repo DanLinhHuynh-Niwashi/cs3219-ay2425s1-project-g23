@@ -13,17 +13,22 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log(login);
-    const response = await fetch(`${baseUrl}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(login),
-      credentials: 'include',
-    });
-    const result = await response.json();
-    if (!response.ok) {
-      alert(`Login credentials incorrect`);
-    } else {
-      navigate('/questions')
+    try {
+      const response = await fetch(`${baseUrl}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(login),
+        credentials: 'include',
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        alert(`Login credentials incorrect`);
+      } else {
+        navigate('/questions')
+      }
+    } catch(err) {
+      console.log(err);
+      alert(`Error connecting to the server. Please try again later.`);
     }
   }
   return (
