@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, Alert, Form } from 'react-bootstrap';
+import { Button, Modal, Alert, Form , Spinner } from 'react-bootstrap';
 import Select from 'react-select'; 
 import './MatchingService.css';
 
@@ -13,6 +13,8 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [loading, setLoading] = useState(true); 
     const [isSubmitting, setSubmitting] = useState(false);
     const [isInQueue, setIsInQueue] = useState(false);
+    const [showStayButton, setShowStayButton] = useState(false);
+    const [isMatching, setIsMatching] = useState(false);
     const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
     
     useEffect(() => {
@@ -22,6 +24,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
             setDifficulty(null);
             //setTopics([]);
             setTopic('');
+            setIsMatching(false);
         }
 
         // get user id
@@ -79,18 +82,19 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         const data = JSON.parse(message.data);
         switch (data.status) {
             case 100:
-            // Update UI for matching in progress
-            alert(data.message);
-            break;
+                // Update UI for matching in progress
+                alert(data.message);
+                setIsMatching(true)
+                break;
             case 200:
-            // Notify match found
-            alert(data.message);
-            handleClose(); // Close modal on successful match
-            break;
+                // Notify match found
+                alert(data.message);
+                handleClose(); // Close modal on successful match
+                break;
             case 500:
-            // Handle error messages
-            setError(data.message);
-            break;
+                // Handle error messages
+                setError(data.message);
+                break;
             default:
             console.log(`Unknown message: ${message.data}`);
         }
@@ -113,6 +117,14 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         //if (topics.length === 0 || !difficulty) { 
         if (!topic || !difficulty) { 
             setError('Please fill in all required fields.');
+            setSubmitting(false);
+            return;
+        }
+        
+        // Show error if already in queue
+        if (isInQueue) {
+            setError('You are already in the queue. Please wait for a match.'); 
+            handleClose(); // Close the modal
             setSubmitting(false);
             return;
         }
@@ -168,6 +180,12 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }
       };
 
+      const handleStayInQueue = () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ event: 'stayInQueue' }));
+        }
+    };
+
     return (
         <Modal show={showModal} onHide={handleClose} centered>
             <Modal.Header className="justify-content-center">
@@ -219,6 +237,13 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                             />
                         </div>
                     </Form.Group>
+                    
+                    {isMatching && (
+                        <div className="text-center mt-3">
+                            <Spinner animation="border" role="status" />
+                            <span className="ms-2">Matching, please wait...</span>
+                        </div>
+                    )}
 
                 </Form>
             </Modal.Body>
@@ -229,23 +254,35 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                         variant="primary" 
                         type="submit" 
                         className="mt-3"
-                        onClick={handleSubmit} // Ensure the form is submitted
+                        onClick={handleSubmit}
                     >
                         {isSubmitting ? 'Joining...' : 'Join Queue'}
                     </Button>
                 ) : (
-                    <Button 
-                        disabled={isSubmitting} 
-                        variant="danger" 
-                        onClick={handleLeaveQueue} 
-                        className="mt-3"
-                    >
-                        {isSubmitting ? 'Leaving...' : 'Leave Queue'}
-                    </Button>
+                    <>
+                        <Button 
+                            disabled={isSubmitting} 
+                            variant="danger" 
+                            onClick={handleLeaveQueue} 
+                            className="mt-3"
+                        >
+                            {isSubmitting ? 'Leaving...' : 'Leave Queue'}
+                        </Button>
+                        {showStayButton && (
+                            <Button 
+                                variant="secondary" 
+                                onClick={handleStayInQueue} 
+                                className="mt-3"
+                            >
+                                Stay in Queue
+                            </Button>
+                        )}
+                    </>
                 )}
             </Modal.Footer>
         </Modal>
     );
 };
+
 
 export default MatchingService;
