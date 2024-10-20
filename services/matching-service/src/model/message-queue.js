@@ -49,7 +49,7 @@ export async function quitRedis() {
 }
 
 // Log the current items in a specific queue
-async function logQueue(queueKey) {
+async function logActiveQueue() {
     try {
         const members = await redisClient.sMembers(ACTIVE_REQUESTS_SET);
         console.log(`Active requests: ${members}`);
@@ -59,22 +59,46 @@ async function logQueue(queueKey) {
     }
 }
 
+// Log the current items in a specific queue
+async function logRequestQueues() {
+    try {
+        for (const key of keys) {
+            const queue = await redisClient.lRange(key, 0, -1); // Get all entries in the list
+            if (queue.length > 0) {
+                const userIds = queue.map(request => JSON.parse(request).userId);
+                console.log(`Queue: ${key} - User IDs: ${userIds.join(', ')}`);
+            } else {
+                console.log(`Queue: ${key} is empty.`);
+            }
+        }
+    } catch (error) {
+        console.error('Error retrieving queue items:', error);
+    }
+}
+
 // Helper function to generate Redis keys
 function getQueueKey(topic, difficulty) {
-    keys.push(`queue:${topic}:${difficulty}`)
-    return `queue:${topic}:${difficulty}`;
+    
+    const newKey = `queue:${topic}:${difficulty}`;
+    if (!keys.includes(newKey)) {
+        keys.push(newKey);
+    }
+    return newKey;
 }
 
 // Add user ID to active requests
 export async function addToActiveRequests(userId) {
     await redisClient.sAdd(ACTIVE_REQUESTS_SET, userId);
+    await logActiveQueue();
+    await logRequestQueues();
 }
 
 // Remove user ID from active requests
 export async function removeFromActiveRequests(userId) {
     console.log(`Removed ${userId} from the active queue.`)
-    logQueue(ACTIVE_REQUESTS_SET)
     await redisClient.sRem(ACTIVE_REQUESTS_SET, userId);
+    await logActiveQueue();
+    await logRequestQueues();
 }
 
 // Check if user ID is in active requests

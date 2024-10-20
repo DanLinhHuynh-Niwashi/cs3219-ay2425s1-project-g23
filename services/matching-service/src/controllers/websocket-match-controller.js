@@ -57,7 +57,7 @@ async function handleJoinQueue(ws, data) {
                 message: `Matching...`,
                 user: ws.user
             }));
-            await setMatchTimeout(ws, topic, difficulty);
+            setMatchTimeout(ws, topic, difficulty);
         }
     } catch (error) {
         console.error('Error joining queue:', error);
@@ -112,24 +112,26 @@ function notifyMatch(match) {
 }
 
 // Handle user choosing to stay in the queue
-async function handleStayInQueue(ws) {
+function handleStayInQueue(ws) {
     if (ws.user) {
-        // Try to match users again
-        const matchFound = await matchUsers(ws.user.topic, ws.user.difficulty);
         // If no match found, set a timeout to ask the user to stay or leave
-        if (!matchFound) {
-            ws.send(JSON.stringify({
-                status: 'matching',
-                message: `Matching...`,
-                user: ws.user
-            }));
-            await setMatchTimeout(ws, ws.user.topic, ws.user.difficulty);
-        }
+        ws.send(JSON.stringify({
+            status: 'matching',
+            message: `Matching...`,
+            user: ws.user
+        }));
+        setMatchTimeout(ws, ws.user.topic, ws.user.difficulty);
     }
 }
 
 // Set a timeout for users to choose to stay or leave
 async function setMatchTimeout(ws, topic, difficulty) {
+    // Clear the match timeout if it exists
+    if (ws.matchTimeout) {
+        clearTimeout(ws.matchTimeout);
+        delete ws.matchTimeout; // Clean up
+    }
+    
     // Store the timer on the WebSocket object
     ws.matchTimeout = setTimeout(async () => {
         const isInQueue = await isUserInActiveRequests(ws.user.userId);
@@ -154,9 +156,9 @@ async function setMatchTimeout(ws, topic, difficulty) {
         ws.on('message', (msg) => {
             const data = JSON.parse(msg);
             if (data.event === 'stayInQueue') {
+                console.log("Clear response timeout");
                 clearTimeout(ws.matchTimeout); // Clear timer if they choose to stay
                 clearTimeout(responseTimeout); // Clear timer if they choose to stay
-                handleStayInQueue(ws); // Attempt to find a match again
             } else if (data.event === 'leaveQueue') {
                 // Notify the user that no match was found within the timeout period
                 console.log("Clear timeout");
@@ -164,8 +166,6 @@ async function setMatchTimeout(ws, topic, difficulty) {
                 clearTimeout(responseTimeout); // Clear timer if they choose to stay
             }
         });
-
-        
     }, TIMEOUT); // 30 seconds
 }
 
