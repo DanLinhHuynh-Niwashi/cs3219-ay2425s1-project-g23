@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Nav } from 'react-bootstrap';
 import { FaUser, FaQuestion, FaSignOutAlt } from 'react-icons/fa';
 import './SideMenu.css';
+import { triggerModalOpen } from '../modalState'; 
 
 function deleteCookie(name) {
   document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -17,7 +18,7 @@ const SideMenu = () => {
       <div className="app-name">
         <h4>PEERPREP</h4>
       </div>
-      <Button className="start-session-button" onClick={() => alert('Start Session clicked!')}>
+      <Button className="start-session-button" onClick={triggerModalOpen}>
         Start Session
       </Button>
       <Nav className="flex-column">
