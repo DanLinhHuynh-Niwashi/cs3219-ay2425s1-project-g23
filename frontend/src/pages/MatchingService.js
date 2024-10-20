@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, Alert, Form , Spinner } from 'react-bootstrap';
+import {triggerModalOpen} from '../modalState'
 import Select from 'react-select'; 
 import './MatchingService.css';
 
@@ -18,15 +19,6 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
     
     useEffect(() => {
-        // remove any error messages from last opened
-        if (showModal) {
-            setError(null);
-            setDifficulty(null);
-            //setTopics([]);
-            setTopic('');
-            setIsMatching(false);
-        }
-
         // get user id
         const fetchUserID = async () => {
           try {
@@ -81,19 +73,30 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         const handleMessage = (message) => {
         const data = JSON.parse(message.data);
         switch (data.status) {
-            case 100:
+            case 'matching':
                 // Update UI for matching in progress
-                alert(data.message);
                 setIsMatching(true)
                 break;
-            case 200:
+            case 'success':
                 // Notify match found
                 alert(data.message);
                 handleClose(); // Close modal on successful match
+                cleanup();
                 break;
+            case 'timeout':
+                // Handle error messages
+                setShowStayButton(true);
+                setError(data.message);
+                triggerModalOpen();
+                break;
+            case 'leave':
+                handleClose();
+                cleanup();
             case 500:
                 // Handle error messages
-                setError(data.message);
+                alert(data.message);
+                handleClose();
+                cleanup();
                 break;
             default:
             console.log(`Unknown message: ${message.data}`);
@@ -145,6 +148,18 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }
         setSubmitting(false);            
     };
+
+    const cleanup = () => {
+        setError(null);
+        setDifficulty(null);
+        //setTopics([]);
+        setTopic('');
+        setIsMatching(false);
+        setSubmitting(false);
+        setIsInQueue(false);
+        setShowStayButton(false);
+    }
+
     const handleTopicChange = (selectedOption) => {
         // Set topic to the label or value of the selected option
         setTopic(selectedOption ? selectedOption.label : ''); // Handle case for no selection
@@ -181,8 +196,20 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
       };
 
       const handleStayInQueue = () => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ event: 'stayInQueue' }));
+        setSubmitting(true);
+        setError(null);
+        try {    
+            // Check if WebSocket is open before sending
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ event: 'stayInQueue' }));
+            } else {
+                setError('WebSocket connection is not open. Please try again later.');
+            }
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setSubmitting(false);
+            setShowStayButton(false);
         }
     };
 
@@ -202,18 +229,21 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                                 <Button 
                                     variant={difficulty === 'Easy' ? 'success' : 'primary'}
                                     onClick={() => setDifficulty('Easy')}
+                                    disabled={isMatching}
                                 >
                                     Easy
                                 </Button>
                                 <Button 
                                     variant={difficulty === 'Medium' ? 'warning' : 'primary'}
                                     onClick={() => setDifficulty('Medium')}
+                                    disabled={isMatching}
                                 >
                                     Medium
                                 </Button>
                                 <Button 
                                     variant={difficulty === 'Hard' ? 'danger' : 'primary'}
                                     onClick={() => setDifficulty('Hard')}
+                                    disabled={isMatching}
                                 >
                                     Hard
                                 </Button>
@@ -221,19 +251,20 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                         </div>
                     </Form.Group>
 
+                    
+
                     {/*<Form.Group controlId="topics" className="mt-3">*/}
                     <Form.Group controlId="topic" className="mt-3">
                         <div className="d-flex align-items-center">
                             <Form.Label className="me-3">Topics</Form.Label>
                             <Select
                                 options={categories}
-                                //value={topics}
-                                //onChange={setTopics}
-                                value={categories.find(category => category.label === topic)} // Find the selected option based on the topic
+                                value={categories.find(category => category.label === topic)} 
                                 onChange={handleTopicChange}
                                 className="basic-multi-select flex-grow-1"
                                 classNamePrefix="select"
                                 placeholder="Select topics..."
+                                isDisabled={isMatching} // Disable Select while matching
                             />
                         </div>
                     </Form.Group>
@@ -270,7 +301,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                         </Button>
                         {showStayButton && (
                             <Button 
-                                variant="secondary" 
+                                variant="primary" 
                                 onClick={handleStayInQueue} 
                                 className="mt-3"
                             >
