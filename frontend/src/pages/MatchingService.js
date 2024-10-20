@@ -70,6 +70,12 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
             
         if (!ws) return; // Exit if WebSocket is not available
 
+        const timeoutId = setTimeout(() => {
+            if (isInQueue) {
+                setShowStayButton(true);
+            }
+        }, 10000); // 10 seconds
+
         const handleMessage = (message) => {
         const data = JSON.parse(message.data);
         switch (data.status) {
@@ -108,6 +114,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         // Cleanup on component unmount
         return () => {
         ws.removeEventListener('message', handleMessage);
+        clearTimeout(timeoutId);
         };
         
       }, [showModal, ws, handleClose]);
