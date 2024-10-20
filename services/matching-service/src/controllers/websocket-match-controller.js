@@ -22,7 +22,7 @@ export function handleMessage(ws, message) {
             handleLeaveQueue(ws, data);
             break;
         default:
-            console.log(`Unknown event type: ${data.event}`);
+            console.log(`Ping: ${data.event}`);
     }
 }
 
@@ -140,7 +140,7 @@ async function setMatchTimeout(ws, topic, difficulty) {
             clearTimeout(ws.matchTimeout);
             return;
         }
-        console.log("Set timer");
+        console.log("Request timeout");
         // Notify the user that no match was found within the timeout period
         ws.send(JSON.stringify({
             status: 'timeout',
