@@ -78,26 +78,38 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
             
         if (!ws) return; // Exit if WebSocket is not available
 
+        const timeoutId = setTimeout(() => {
+            if (isInQueue) {
+                setShowStayButton(true);
+            }
+        }, 10000); // 10 seconds
+
         const handleMessage = (message) => {
-        const data = JSON.parse(message.data);
-        switch (data.status) {
-            case 100:
-                // Update UI for matching in progress
-                alert(data.message);
-                setIsMatching(true)
-                break;
-            case 200:
-                // Notify match found
-                alert(data.message);
-                handleClose(); // Close modal on successful match
-                break;
-            case 500:
-                // Handle error messages
-                setError(data.message);
-                break;
-            default:
-            console.log(`Unknown message: ${message.data}`);
-        }
+            const data = JSON.parse(message.data);
+            switch (data.status) {
+                case 100:
+                    // Update UI for matching in progress
+                    alert(data.message);
+                    setIsMatching(true)
+                    break;
+                case 200:
+                    // Notify match found
+                    alert(data.message);
+                    handleClose(); // Close modal on successful match
+                    break;
+                case 500:
+                    // Handle error messages
+                    setError(data.message);
+                    break;
+                case 'Timeout':
+                    setShowStayButton(true);
+                    break;
+                case 'Response timeout':
+                    handleClose(); // close the panel
+                    break;
+                default:
+                console.log(`Unknown message: ${message.data}`);
+            }
         };
 
         ws.addEventListener('message', handleMessage);
@@ -105,6 +117,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         // Cleanup on component unmount
         return () => {
         ws.removeEventListener('message', handleMessage);
+        clearTimeout(timeoutId);
         };
         
       }, [showModal, ws, handleClose]);
@@ -144,6 +157,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
             setError('WebSocket connection is not open. Please try again later.');
         }
         setSubmitting(false);            
+        setShowStayButton(false); // Reset on submitting
     };
     const handleTopicChange = (selectedOption) => {
         // Set topic to the label or value of the selected option
@@ -184,6 +198,8 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         if (ws && ws.readyState === WebSocket.OPEN) {
             ws.send(JSON.stringify({ event: 'stayInQueue' }));
         }
+
+        setShowStayButton(false); // Reset when leaving
     };
 
     return (
