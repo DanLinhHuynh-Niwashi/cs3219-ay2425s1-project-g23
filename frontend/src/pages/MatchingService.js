@@ -16,8 +16,23 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [isInQueue, setIsInQueue] = useState(false);
     const [showStayButton, setShowStayButton] = useState(false);
     const [isMatching, setIsMatching] = useState(false);
+    const [timer, setTimer] = useState(0); // New state for timer
     const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
     
+    useEffect(() => {
+        // Timer logic
+        let timerInterval = null;
+        if (isMatching) {
+            timerInterval = setInterval(() => {
+                setTimer(prevTime => prevTime + 1);
+            }, 1000); // Increment timer every second
+        } else {
+            setTimer(0); // Reset timer when matching is stopped
+        }
+
+        return () => clearInterval(timerInterval); // Cleanup interval on unmount
+    }, [isMatching]);
+
     useEffect(() => {
         // get user id
         const fetchUserID = async () => {
@@ -279,7 +294,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                     {isMatching && (
                         <div className="text-center mt-3">
                             <Spinner animation="border" role="status" />
-                            <span className="ms-2">Matching, please wait...</span>
+                            <span className="ms-2">Matching, please wait... {timer}s</span> {/* Timer displayed here */}
                         </div>
                     )}
 
