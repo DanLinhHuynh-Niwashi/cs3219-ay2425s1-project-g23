@@ -1,5 +1,5 @@
 import { addToQueue, removeFromQueue, findMatch,
-    isUserInActiveRequests } from "../model/message-queue.js";
+    isUserInActiveRequests } from "./message-queue-controller.js";
 import 'ws';
 
 const TIMEOUT = 30000; // 30 seconds timeout for finding a match
