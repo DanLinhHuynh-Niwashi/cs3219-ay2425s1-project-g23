@@ -6,9 +6,9 @@ import AppRoutes from './routes';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoutes from './utils/ProtectedRoutes';
+import RedirectRoutes from './utils/RedirectRoutes';
 import MatchingService from './pages/MatchingService'; 
 import { useModal } from './modalState'; // Import the custom modal hook
-import Question from './pages/Question';
 
 function App() {
   const { isModalOpen, closeModal } = useModal();
@@ -58,8 +58,10 @@ function App() {
       <MatchingService showModal={isModalOpen} handleClose={closeModal} ws={ws} />
 
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route element={<RedirectRoutes />}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
         {/* All routes wrapped in Layout */}
         <Route element={<ProtectedRoutes />}>
           <Route path="/*" element={<Layout />}>
