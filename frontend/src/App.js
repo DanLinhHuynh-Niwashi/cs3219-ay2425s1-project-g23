@@ -45,7 +45,7 @@ function App() {
 
     // Cleanup
     return () => {
-      if (websocket) {
+      if (websocket.readyState == WebSocket.OPEN) {
         websocket.close();
       }
       clearInterval(intervalRef.current);
