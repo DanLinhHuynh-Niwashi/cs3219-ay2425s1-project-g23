@@ -59,6 +59,17 @@ services:
     depends_on:
       - redis
 
+  collaboration-service:
+    build: 
+        context: ./services/collaboration-service
+        args:
+        - PORT=${COLLAB_PORT}
+    ports:
+      - "${COLLAB_PORT}:${COLLAB_PORT}"
+    environment:
+      PORT: ${COLLAB_PORT}
+      ENV: ${ENV}
+
   redis:
     image: redis:alpine
     ports:
