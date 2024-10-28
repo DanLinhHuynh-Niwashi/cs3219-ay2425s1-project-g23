@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import AppRoutes from './routes'; 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Collaboration from './pages/Collaboration';
 import ProtectedRoutes from './utils/ProtectedRoutes';
 import RedirectRoutes from './utils/RedirectRoutes';
 import MatchingService from './pages/MatchingService'; 
@@ -67,6 +68,7 @@ function App() {
           <Route path="/*" element={<Layout />}>
             <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
           </Route>
+          <Route path="/session/:sessionId" element={<Collaboration/>} />
         </Route>
       </Routes>
     </Router>

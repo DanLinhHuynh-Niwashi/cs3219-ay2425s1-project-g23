@@ -1,6 +1,7 @@
 import { addToQueue, removeFromQueue, findMatch,
     isUserInActiveRequests } from "../model/message-queue.js";
 import 'ws';
+import { v4 as uuidv4 } from 'uuid';
 
 const TIMEOUT = 30000; // 30 seconds timeout for finding a match
 const RESPONSE_TIMEOUT = 10000; // 10 seconds timeout for direct match
@@ -88,14 +89,15 @@ function notifyMatch(match) {
     const { request1, request2, topic, difficulty } = match;
     const user1Ws = requestClients.get(request1.userId); // Retrieve user1's WebSocket from clients Map
     const user2Ws = requestClients.get(request2.userId); // Retrieve user2's WebSocket from clients Map
-
+    const sessionId = uuidv4();
     if (user1Ws && user2Ws) {
         user1Ws.send(JSON.stringify({
             status: 'success',
             message: `You have been matched with ${request2.userId} on topic ${topic}.`,
             userId: request2.userId,
             topic: topic,
-            difficulty: difficulty
+            difficulty: difficulty,
+            sessionId: sessionId
         }));
 
         user2Ws.send(JSON.stringify({
@@ -103,9 +105,9 @@ function notifyMatch(match) {
             message: `You have been matched with ${request1.userId} on topic ${topic}.`,
             userId: request1.userId,
             topic: topic,
-            difficulty: difficulty
+            difficulty: difficulty,
+            sessionId: sessionId
         }));
-
         handleLeaveQueue(user1Ws, request1)
         handleLeaveQueue(user2Ws, request2)
     }
