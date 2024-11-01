@@ -17,8 +17,8 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [showStayButton, setShowStayButton] = useState(false);
     const [isMatching, setIsMatching] = useState(false);
     const [timer, setTimer] = useState(0); // New state for timer
-    const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
-    
+    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+    const service = 'matching'
     useEffect(() => {
         // Timer logic
         let timerInterval = null;
@@ -156,6 +156,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     
         const requestData = {
           event: 'joinQueue',
+          service: service,
           userId,
           //topics: topics,
           topic,
@@ -192,6 +193,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         try {
             const requestData = {
                 event: 'leaveQueue',
+                service: service,
                 userId,
                 //topics: topics,
                 topic,
@@ -222,8 +224,16 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         setError(null);
         try {    
             // Check if WebSocket is open before sending
+            const requestData = {
+                event: 'stayInQueue',
+                service: service,
+                userId,
+                //topics: topics,
+                topic,
+                difficulty,
+            };
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ event: 'stayInQueue' }));
+                ws.send(JSON.stringify(requestData));
             } else {
                 setError('WebSocket connection is not open. Please try again later.');
             }

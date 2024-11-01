@@ -6,7 +6,7 @@ import profileImage from '../img/default_profile.jpg';
 
 
 function EditProfile() {
-    const baseUrl = process.env.REACT_APP_USER_API_URL || 'http://localhost:3000';
+    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
     const navigate = useNavigate()
     const [profile, setProfile] = useState({
         name: '',

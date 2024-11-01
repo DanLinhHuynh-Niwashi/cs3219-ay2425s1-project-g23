@@ -8,14 +8,14 @@ const AddQuestion = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [complexity, setComplexity] = useState('easy'); // Default to 'easy'
+  const [complexity, setComplexity] = useState('Easy'); // Default to 'Easy'
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [error, setError] = useState(null);
 
   const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
 
-  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -85,7 +85,7 @@ const AddQuestion = () => {
       alert(result.message);
       setTitle('');
       setDescription('');
-      setComplexity('easy');
+      setComplexity('Easy');
       setSelectedCategories([]);
     } catch (error) {
       console.error('Error adding question:', error.message);
