@@ -1,5 +1,5 @@
 {
-  "name": "matching-service",
+  "name": "collaboration-service",
   "version": "1.0.0",
   "main": "src/index.js",
   "type": "module",
@@ -26,10 +26,14 @@
     ]
   },
   "dependencies": {
-    "redis": "^4.7.0",
+    "axios": "^1.7.7",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "mongodb": "^6.9.0",
+    "mongoose": "^8.5.4",
+    "redis": "^4.7.0",
     "ws": "^8.18.0"
   }
 }
