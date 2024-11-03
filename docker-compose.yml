@@ -69,6 +69,8 @@ services:
     environment:
       PORT: ${COLLAB_PORT}
       ENV: ${ENV}
+      DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
+      DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
 
   redis:
     image: redis:alpine

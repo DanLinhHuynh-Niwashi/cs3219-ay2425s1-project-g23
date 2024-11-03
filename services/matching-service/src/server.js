@@ -1,9 +1,9 @@
+import "dotenv/config";
 import { WebSocketServer } from 'ws'; 
 import { setupRoutes } from './routes/match-routes.js'; // Import the setupRoutes function
 import { initializeRedis, flushRedis } from './model/message-queue.js';
 import index from "./index.js";
 import http from "http";
-import "dotenv/config";
 
 const port = process.env.PORT || 8080;
 const server = http.createServer(index);
