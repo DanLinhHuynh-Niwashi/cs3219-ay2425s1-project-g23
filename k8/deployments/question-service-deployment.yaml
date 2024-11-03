@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: question-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: question-service
+  template:
+    metadata:
+      labels:
+        app: question-service
+    spec:
+      containers:
+      - name: question-service
+        image: wuemily/question-service:latest
+        ports:
+        - containerPort: 8081
+        env:
+        - name: PORT
+          value: "8081"
+        - name: DB_CLOUD_URI
+          value: "${QUESTION_DB_CLOUD_URI}"
+        - name: DB_LOCAL_URI
+          value: "${QUESTION_DB_LOCAL_URI}"
+        - name: ENV
+          value: "${ENV}"
