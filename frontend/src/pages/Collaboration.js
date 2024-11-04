@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function Collaboration() {
   const { category, sessionId } = useParams();
   const navigate = useNavigate()
@@ -138,6 +142,7 @@ function Collaboration() {
     if (webSocket) {
       webSocket.send(JSON.stringify({ type: "leaveSession", userId }));  // Notify server
       setBothConnected(false);
+      await sleep(100);
       navigateToSummary();
     }
     setShowModal(false);
