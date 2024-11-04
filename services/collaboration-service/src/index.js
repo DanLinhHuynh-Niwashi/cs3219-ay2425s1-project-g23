@@ -1,8 +1,9 @@
 import express from "express";
 import cors from "cors";
-
+import collabRoutes from "./routes/collab-route.js";
 
 const app = express();
+let dbConnected = false;
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -28,11 +29,20 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use("/collab", collabRoutes);
+
 app.get("/", (req, res, next) => {
+  if(!dbConnected) {
+    console.log("Database connection failed!");
+    res.status(503).json({
+      message: "Service is currently unavailable due to database connection issues.",
+    });
+  } else {
     console.log("Sending Greetings!");
     res.json({
-      message: "Hello World from matching-service",
+      message: "Hello World from collaboration-service",
     });
+  }
 });
 
 app.use((req, res, next) => {
@@ -49,5 +59,10 @@ app.use((error, req, res, next) => {
     },
   });
 });
+
+// Function to update DB status message
+export const updateDBStatus = (isConnected) => {
+  dbConnected = isConnected;
+};
 
 export default app;
