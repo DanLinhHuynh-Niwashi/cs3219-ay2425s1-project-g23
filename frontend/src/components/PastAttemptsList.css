@@ -1,0 +1,16 @@
+/* PastAttemptsList.css */
+
+.past-attempts-list-container {
+    height: calc(100vh - 150px);
+    overflow-y: scroll;
+    padding: 0 15px;
+    margin-top: 10px;
+}
+
+.past-attempts-list-row {
+    max-height: 100%;
+}
+
+.past-attempt-card-col {
+    margin-bottom: 15px;
+}

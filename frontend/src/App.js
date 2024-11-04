@@ -5,9 +5,12 @@ import Layout from './components/Layout';
 import AppRoutes from './routes'; 
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Collaboration from './pages/Collaboration';
 import ProtectedRoutes from './utils/ProtectedRoutes';
 import RedirectRoutes from './utils/RedirectRoutes';
 import MatchingService from './pages/MatchingService'; 
+import SessionSummaryPage from './pages/SessionSummaryPage'; // Adjust the path as necessary
+
 import { useModal } from './modalState'; // Import the custom modal hook
 
 function App() {
@@ -67,6 +70,8 @@ function App() {
           <Route path="/*" element={<Layout />}>
             <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
           </Route>
+          <Route path="/session/:sessionId" element={<Collaboration/>} />
+          <Route path="/summary" element={<SessionSummaryPage />} /> 
         </Route>
       </Routes>
     </Router>

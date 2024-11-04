@@ -59,6 +59,19 @@ services:
     depends_on:
       - redis
 
+  collaboration-service:
+    build: 
+        context: ./services/collaboration-service
+        args:
+        - PORT=${COLLAB_PORT}
+    ports:
+      - "${COLLAB_PORT}:${COLLAB_PORT}"
+    environment:
+      PORT: ${COLLAB_PORT}
+      ENV: ${ENV}
+      DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
+      DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
+
   redis:
     image: redis:alpine
     ports:
@@ -76,4 +89,22 @@ services:
       - question-service
       - matching-service
 
-  
+  history-service: 
+    build: 
+      context: ./services/history-service
+      args:
+        - PORT=${HISTORY_PORT}
+    ports:
+      - "${HISTORY_PORT}:${HISTORY_PORT}"
+    environment:
+      PORT: ${HISTORY_PORT}
+      DB_CLOUD_URI: ${HISTORY_DB_CLOUD_URI}
+      DB_LOCAL_URI: ${HISTORY_DB_LOCAL_URI}
+      ENV: ${ENV}
+    depends_on:
+      - history-db
+
+  history-db:  # Database for history service
+    image: mongodb/mongodb-atlas-local
+    ports:
+      - "27020:27020"
