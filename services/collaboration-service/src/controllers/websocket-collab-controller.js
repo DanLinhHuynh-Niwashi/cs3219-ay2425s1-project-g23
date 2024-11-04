@@ -4,6 +4,10 @@ import { format } from 'date-fns';
 
 
 export async function handleEndSession(userId, sessionId, sessions, clients, questionId) {
+    const existingSession = await getSessionSummary(sessionId);
+    if (existingSession) {
+        return;
+    }
     const session = sessions.get(sessionId);
     const participantsArray = Array.from(session.participants);
     // Map the participants to the required structure

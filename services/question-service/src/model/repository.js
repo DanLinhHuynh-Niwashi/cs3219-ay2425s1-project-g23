@@ -68,7 +68,6 @@ export async function findQuestionsByFilter(categoryName, difficulty) {
     if (!category) {
       return [];
     }
-    console.log(category._id + " " + difficulty)
     const questions = await Question.find({ categories: category._id, complexity: difficulty });
     return questions
   } catch (error) {

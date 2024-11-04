@@ -22,22 +22,31 @@ function Collaboration() {
   const [joinTime, setJoinTime] = useState(null); // Initialize joinTime state
 
   const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
+
+
 
   useEffect(() => {
-    const handleBeforeUnload = (event) => {
-      // This is where you can show the alert
-      const message = 'You have unsaved changes. Please use the leave button instead!';
-      event.preventDefault(); // This is needed for older browsers
-      event.returnValue = message; // This is required for modern browsers
-      return message; // Some browsers still expect a return value
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
     };
 
-    // Attach the event listener
-    window.addEventListener('beforeunload', handleBeforeUnload);
+    // Prevent back button navigation
+    const handlePopState = (e) => {
+      e.preventDefault();
+      window.history.pushState(null, document.title, window.location.href);
+    };
 
-    // Cleanup the event listener on component unmount
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup event listeners on component unmount
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, []);
 
@@ -61,25 +70,12 @@ function Collaboration() {
       }
     };
     fetchUserID();
-    const handleBeforeUnload = (event) => {
-      event.preventDefault();
-      // Display the confirmation dialog
-      event.returnValue = ''; // Required for Chrome and Firefox
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
   }, []);
   useEffect(() => {
     const fetchRandomQuestion = async () => {
       let filters = category.split("-")
-      console.log("filters" + filters)
       let response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
       const data = await response.json();
-      console.log(data)
       setChosenQuestion(data._id)
     };
     fetchRandomQuestion();
@@ -95,15 +91,17 @@ function Collaboration() {
       setSyncedQuestion(data.data);
     };
     if (userId) {
-      let ws = new WebSocket(`ws://localhost:8081/${sessionId}/${userId}/${chosenQuestion}`);
+      let ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
       setWebSocket(ws);
       ws.onopen = () => {
         console.log("WebSocket connection opened");
       };
       ws.onclose = () =>
+        navigateToSummary();
         console.log(`WebSocket connection closed for user ${userId}`);
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
+        console.log(data)
         switch (data.type) {
           case 'connectionStatus':
             console.log(data)
@@ -119,6 +117,10 @@ function Collaboration() {
             break;
           case 'sessionEnded':
             console.log(data.message)
+            navigateToSummary();
+            break;
+          case 'disconnection':
+            setBothConnected(false);
             navigateToSummary();
             break;
           default:
@@ -143,7 +145,7 @@ function Collaboration() {
 
   const navigateToSummary = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/collab/session-summary/${sessionId}`);
+      const response = await fetch(`${baseUrl}/collab/session-summary/${sessionId}`);
       if (response.ok) {
         const sessionSummaryData = await response.json();
         console.log("Navigating to summary page with data:", sessionSummaryData);
@@ -181,7 +183,6 @@ function Collaboration() {
         placeholder="Type here..."
         style={{ width: '100%', fontSize: '16px' }}
       />
-
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
