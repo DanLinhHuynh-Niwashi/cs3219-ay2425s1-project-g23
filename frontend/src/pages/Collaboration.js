@@ -23,6 +23,23 @@ function Collaboration() {
 
   const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      // This is where you can show the alert
+      const message = 'You have unsaved changes. Please use the leave button instead!';
+      event.preventDefault(); // This is needed for older browsers
+      event.returnValue = message; // This is required for modern browsers
+      return message; // Some browsers still expect a return value
+    };
+
+    // Attach the event listener
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserID = () => {
@@ -44,11 +61,25 @@ function Collaboration() {
       }
     };
     fetchUserID();
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      // Display the confirmation dialog
+      event.returnValue = ''; // Required for Chrome and Firefox
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
   }, []);
   useEffect(() => {
     const fetchRandomQuestion = async () => {
-      let response = await fetch(`${questionUrl}/questions/random/${category}`);
+      let filters = category.split("-")
+      console.log("filters" + filters)
+      let response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
       const data = await response.json();
+      console.log(data)
       setChosenQuestion(data._id)
     };
     fetchRandomQuestion();
@@ -57,7 +88,10 @@ function Collaboration() {
     const getSessionQuestion = async (id) => {
       let response = await fetch(`${questionUrl}/questions/${id}`);
       const data = await response.json();
-      console.log(data.data)
+      if (response.status == 404) {
+        alert("No questions found for the selected difficulty and topic. Please try a different combination.");
+        navigate('/questions')
+      }
       setSyncedQuestion(data.data);
     };
     if (userId) {

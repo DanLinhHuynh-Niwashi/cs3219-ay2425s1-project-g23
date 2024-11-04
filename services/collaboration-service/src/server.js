@@ -78,7 +78,7 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         if (data.type === 'leaveSession') {
-            handleEndSession(userId, sessionId, sessions, clients);
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
         }
     });
     

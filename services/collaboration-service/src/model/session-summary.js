@@ -20,6 +20,8 @@ const sessionSummarySchema = new mongoose.Schema({
     },
   ],
   duration: { type: String },
+  dateTime: { type: String },
+  questionId: { type: String },
   summaryNotes: { type: String },
 });
 

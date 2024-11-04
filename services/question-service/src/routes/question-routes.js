@@ -17,7 +17,7 @@ questionRoutes.post("/", createQuestion);
 
 questionRoutes.get("/:id", getQuestion);
 
-questionRoutes.get("/random/:category", getRandomQuestionByCategory);
+questionRoutes.get("/random/:category/:difficulty", getRandomQuestionByCategory);
 
 questionRoutes.patch("/:id", updateQuestion);
 

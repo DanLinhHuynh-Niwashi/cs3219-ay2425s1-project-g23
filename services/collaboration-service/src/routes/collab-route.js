@@ -21,13 +21,9 @@ export function setupRoutes(wss) {
             sessions[sessionId] = {[user]: ws}
         }
         ws.on('message', (message) => { 
-            console.log('message')
             const parsedMessage = JSON.parse(message);
-            console.log(sessions)
             Object.values(sessions[sessionId]).forEach(client => {
-                console.log(client.readyState)
                 if (client !== ws && client.readyState === WebSocket.OPEN) {
-                    console.log('message sent')
                     client.send(JSON.stringify(parsedMessage));
                 }
             });
