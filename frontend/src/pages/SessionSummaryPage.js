@@ -29,6 +29,9 @@ const SessionSummaryPage = () => {
                                     <strong>Duration:</strong> {sessionSummary.duration} seconds
                                 </Card.Text>
                                 <Card.Text>
+                                    <strong>Date:</strong> {sessionSummary.dateTime}
+                                </Card.Text>
+                                <Card.Text>
                                     <strong>Summary Notes:</strong>
                                     <p>{sessionSummary.summaryNotes}</p>
                                 </Card.Text>

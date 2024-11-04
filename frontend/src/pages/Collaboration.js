@@ -3,9 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function Collaboration() {
-  const { sessionId } = useParams();
+  const { category, sessionId } = useParams();
   const navigate = useNavigate()
+  const [chosenQuestion, setChosenQuestion] = useState(null);
+  const [syncedQuestion, setSyncedQuestion] = useState({
+    id: '',
+    description: '',
+    title: '',
+    complexity: '',
+  })
   const [userId, setUserId] = useState(null);
   const [text, setText] = useState('');
   const [bothConnected, setBothConnected] = useState(false);
@@ -13,6 +24,35 @@ function Collaboration() {
   const [showModal, setShowModal] = useState(false); // Modal visibility state
   const [showPartnerLeftModal, setShowPartnerLeftModal] = useState(false);
   const [joinTime, setJoinTime] = useState(null); // Initialize joinTime state
+
+  const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
+
+
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+    };
+
+    // Prevent back button navigation
+    const handlePopState = (e) => {
+      e.preventDefault();
+      window.history.pushState(null, document.title, window.location.href);
+    };
+
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup event listeners on component unmount
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserID = () => {
@@ -36,19 +76,41 @@ function Collaboration() {
     fetchUserID();
   }, []);
   useEffect(() => {
+    const fetchRandomQuestion = async () => {
+      let filters = category.split("-")
+      let response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
+      const data = await response.json();
+      setChosenQuestion(data._id)
+    };
+    fetchRandomQuestion();
+  }, [userId]);
+  useEffect(() => {
+    const getSessionQuestion = async (id) => {
+      let response = await fetch(`${questionUrl}/questions/${id}`);
+      const data = await response.json();
+      if (response.status == 404) {
+        alert("No questions found for the selected difficulty and topic. Please try a different combination.");
+        navigate('/questions')
+      }
+      setSyncedQuestion(data.data);
+    };
     if (userId) {
-      let ws = new WebSocket(`ws://localhost:8081/${sessionId}/${userId}`);
+      let ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
       setWebSocket(ws);
       ws.onopen = () => {
         console.log("WebSocket connection opened");
       };
-      ws.onclose = () => 
+      ws.onclose = () =>
+        navigateToSummary();
         console.log(`WebSocket connection closed for user ${userId}`);
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
+        console.log(data)
         switch (data.type) {
           case 'connectionStatus':
+            console.log(data)
             setBothConnected(data.connectedClients == 2);
+            getSessionQuestion(data.question);
             break;
           case 'message':
             setText(data.message);
@@ -61,12 +123,16 @@ function Collaboration() {
             console.log(data.message)
             navigateToSummary();
             break;
+          case 'disconnection':
+            setBothConnected(false);
+            navigateToSummary();
+            break;
           default:
             break;
         }
       }
     }
-  }, [userId, sessionId, navigate]);
+  }, [chosenQuestion, navigate]);
 
   const handleLeaveClick = () => {
     setShowModal(true); // Show the confirmation modal
@@ -74,8 +140,9 @@ function Collaboration() {
 
   const handleConfirmLeave = async () => {
     if (webSocket) {
-      webSocket.send(JSON.stringify({ type: "leaveSession", userId}));  // Notify server
+      webSocket.send(JSON.stringify({ type: "leaveSession", userId }));  // Notify server
       setBothConnected(false);
+      await sleep(100);
       navigateToSummary();
     }
     setShowModal(false);
@@ -83,10 +150,10 @@ function Collaboration() {
 
   const navigateToSummary = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/collab/session-summary/${sessionId}`);
+      const response = await fetch(`${baseUrl}/collab/session-summary/${sessionId}`);
       if (response.ok) {
         const sessionSummaryData = await response.json();
-        console.log("Navigating to summary page with data:", sessionSummaryData); 
+        console.log("Navigating to summary page with data:", sessionSummaryData);
         navigate(`/summary`, { state: { sessionSummary: sessionSummaryData } });
       } else {
         console.error("Failed to retrieve session summary for redirection.");
@@ -100,7 +167,7 @@ function Collaboration() {
     const newText = e.target.value;
     setText(newText);
     if (webSocket) {
-      webSocket.send(JSON.stringify({type: 'message', message: newText}));
+      webSocket.send(JSON.stringify({ type: 'message', message: newText }));
     }
   };
 
@@ -121,7 +188,6 @@ function Collaboration() {
         placeholder="Type here..."
         style={{ width: '100%', fontSize: '16px' }}
       />
-
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
@@ -148,10 +214,10 @@ function Collaboration() {
           Your partner has left the session. You will be redirected to the session summary page in 10 seconds.
         </Modal.Body>
         <Modal.Footer>
-          <Button 
-            variant="primary" 
+          <Button
+            variant="primary"
             onClick={() => {
-              navigate('/questions');  // Navigate to the summary page immediately
+              navigateToSummary();  // Navigate to the summary page immediately
               setShowPartnerLeftModal(false); // Close the modal
             }}
           >
@@ -159,6 +225,14 @@ function Collaboration() {
           </Button>
         </Modal.Footer>
       </Modal>
+      {bothConnected && <div>
+        <h1>
+          {syncedQuestion.title}
+        </h1>
+        <div>
+          {syncedQuestion.description}
+        </div>
+      </div>}
     </div>
   );
 }
