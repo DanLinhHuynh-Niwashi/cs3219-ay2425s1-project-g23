@@ -3,6 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function Collaboration() {
   const { category, sessionId } = useParams();
   const navigate = useNavigate()
@@ -22,7 +26,33 @@ function Collaboration() {
   const [joinTime, setJoinTime] = useState(null); // Initialize joinTime state
 
   const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
 
+
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+    };
+
+    // Prevent back button navigation
+    const handlePopState = (e) => {
+      e.preventDefault();
+      window.history.pushState(null, document.title, window.location.href);
+    };
+
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup event listeners on component unmount
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchUserID = () => {
@@ -47,7 +77,8 @@ function Collaboration() {
   }, []);
   useEffect(() => {
     const fetchRandomQuestion = async () => {
-      let response = await fetch(`${questionUrl}/questions/random/${category}`);
+      let filters = category.split("-")
+      let response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
       const data = await response.json();
       setChosenQuestion(data._id)
     };
@@ -57,19 +88,24 @@ function Collaboration() {
     const getSessionQuestion = async (id) => {
       let response = await fetch(`${questionUrl}/questions/${id}`);
       const data = await response.json();
-      console.log(data.data)
+      if (response.status == 404) {
+        alert("No questions found for the selected difficulty and topic. Please try a different combination.");
+        navigate('/questions')
+      }
       setSyncedQuestion(data.data);
     };
     if (userId) {
-      let ws = new WebSocket(`ws://localhost:8081/${sessionId}/${userId}/${chosenQuestion}`);
+      let ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
       setWebSocket(ws);
       ws.onopen = () => {
         console.log("WebSocket connection opened");
       };
       ws.onclose = () =>
+        navigateToSummary();
         console.log(`WebSocket connection closed for user ${userId}`);
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
+        console.log(data)
         switch (data.type) {
           case 'connectionStatus':
             console.log(data)
@@ -87,6 +123,10 @@ function Collaboration() {
             console.log(data.message)
             navigateToSummary();
             break;
+          case 'disconnection':
+            setBothConnected(false);
+            navigateToSummary();
+            break;
           default:
             break;
         }
@@ -102,6 +142,7 @@ function Collaboration() {
     if (webSocket) {
       webSocket.send(JSON.stringify({ type: "leaveSession", userId }));  // Notify server
       setBothConnected(false);
+      await sleep(100);
       navigateToSummary();
     }
     setShowModal(false);
@@ -109,7 +150,7 @@ function Collaboration() {
 
   const navigateToSummary = async () => {
     try {
-      const response = await fetch(`http://localhost:8081/collab/session-summary/${sessionId}`);
+      const response = await fetch(`${baseUrl}/collab/session-summary/${sessionId}`);
       if (response.ok) {
         const sessionSummaryData = await response.json();
         console.log("Navigating to summary page with data:", sessionSummaryData);
@@ -147,7 +188,6 @@ function Collaboration() {
         placeholder="Type here..."
         style={{ width: '100%', fontSize: '16px' }}
       />
-
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
