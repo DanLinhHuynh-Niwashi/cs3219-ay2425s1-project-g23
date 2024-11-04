@@ -73,6 +73,7 @@ services:
       - app-network
 
   collaboration-service:
+    container_name: collaboration-service
     build: 
         context: ./services/collaboration-service
         args:
@@ -101,9 +102,11 @@ services:
         - MATCHING_PORT=${MATCHING_PORT}
         - QUESTION_PORT=${QUESTION_PORT}
         - USER_PORT=${USER_PORT}
+        - COLLAB_PORT=${COLLAB_PORT}
         - USER_URL=http://user-service
         - MATCHING_URL=http://matching-service
         - QUESTION_URL=http://question-service
+        - COLLAB_URL=http://collaboration-service
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
@@ -111,9 +114,11 @@ services:
       MATCHING_PORT: ${MATCHING_PORT}
       QUESTION_PORT: ${QUESTION_PORT}
       USER_PORT: ${USER_PORT}
+      COLLAB_PORT: ${COLLAB_PORT}
       USER_URL: http://user-service
       MATCHING_URL: http://matching-service
       QUESTION_URL: http://question-service
+      COLLAB_URL: http://collaboration-service
     depends_on:
       - question-service
       - user-service
