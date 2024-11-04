@@ -62,6 +62,22 @@ export async function findQuestionById(id) {
   }
 }
 
+export async function findQuestionsByCategoryName(name) {
+  try {
+    console.log(1)
+    const category = await Category.findOne({ name: name });
+    console.log(category)
+    if (!category) {
+      return [];
+    }
+    const questions = await Question.find({ categories: category._id });
+    console.log(questions)
+    return questions
+  } catch (error) {
+    throw error;
+  }
+}
+
 // Get all questions
 export async function findAllQuestions() {
   try {

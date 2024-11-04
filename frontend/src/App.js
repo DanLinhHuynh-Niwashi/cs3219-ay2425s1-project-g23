@@ -70,7 +70,7 @@ function App() {
           <Route path="/*" element={<Layout />}>
             <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
           </Route>
-          <Route path="/session/:sessionId" element={<Collaboration/>} />
+          <Route path="/session/:category/:sessionId" element={<Collaboration/>} />
           <Route path="/summary" element={<SessionSummaryPage />} /> 
         </Route>
       </Routes>

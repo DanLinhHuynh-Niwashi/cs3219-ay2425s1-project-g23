@@ -103,7 +103,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                     break;
                 case 'success':
                     // Notify match found
-                    navigate(`/session/${data.sessionId}`)
+                    navigate(`/session/${data.topic}/${data.sessionId}`)
                     handleClose(); // Close modal on successful match
                     cleanup();
                     break;

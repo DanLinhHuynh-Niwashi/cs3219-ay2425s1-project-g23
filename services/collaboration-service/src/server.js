@@ -35,6 +35,7 @@ wss.on('connection', (ws, req) => {
     const urlParams = req.url.split('/');
     const sessionId = urlParams[1];
     const userId = urlParams[2];
+    const question = urlParams[3];
 
     clients[userId] = ws; // Store the WebSocket connection
 
@@ -42,7 +43,8 @@ wss.on('connection', (ws, req) => {
     if (!sessions.has(sessionId)) {
         sessions.set(sessionId, {
             participants: new Set(),
-            joinTimes: new Map()
+            joinTimes: new Map(),
+            questionId: null
         });
     }
 
@@ -55,6 +57,9 @@ wss.on('connection', (ws, req) => {
 
     // Notify clients when a new client connects
     const connectedClientsCount = session.participants.size;
+    if (connectedClientsCount == 1) {
+        session.questionId = question
+    }
     if (connectedClientsCount === 2) {
         for (const participant of session.participants) {
             const client = clients[participant];
@@ -63,6 +68,7 @@ wss.on('connection', (ws, req) => {
                     type: 'connectionStatus',
                     message: 'You are now connected to another user!',
                     connectedClients: connectedClientsCount,
+                    question: session.questionId
                 }));
             }
         }

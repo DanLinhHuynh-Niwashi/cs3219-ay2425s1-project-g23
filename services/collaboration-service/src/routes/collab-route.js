@@ -7,6 +7,7 @@ let sessions = {}; // {SessionID : {UserID1 : WebSocket1, UserID2 : WebSocket2}}
 export function setupRoutes(wss) { 
     wss.on('connection', (ws, req) => {
         const url = req.url.split('/')
+        const question = url.pop();
         const user = url.pop();
         const sessionId = url.pop();
         if (sessions[sessionId]) {
@@ -20,9 +21,13 @@ export function setupRoutes(wss) {
             sessions[sessionId] = {[user]: ws}
         }
         ws.on('message', (message) => { 
+            console.log('message')
             const parsedMessage = JSON.parse(message);
+            console.log(sessions)
             Object.values(sessions[sessionId]).forEach(client => {
+                console.log(client.readyState)
                 if (client !== ws && client.readyState === WebSocket.OPEN) {
+                    console.log('message sent')
                     client.send(JSON.stringify(parsedMessage));
                 }
             });
