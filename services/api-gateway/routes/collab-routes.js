@@ -10,7 +10,7 @@ const port = process.env.COLLAB_PORT || 8081;
 const collabRoutes = express.Router();
 
 // Collab routes
-collabRoutes.post("/session-summary", async (req, res) => handleHttpRequest(req, res, base_url, port, "/session-summary"));
-collabRoutes.post("/session-summary/:sessionId", (req, res) => handleHttpRequest(req, res, base_url, port, `/session-summary/${req.params.sessionId}`));
+collabRoutes.post("/collab/session-summary", async (req, res) => handleHttpRequest(req, res, base_url, port, "/collab/session-summary"));
+collabRoutes.get("/collab/session-summary/:sessionId", (req, res) => handleHttpRequest(req, res, base_url, port, `/collab/session-summary/${req.params.sessionId}`));
 
 export default collabRoutes;

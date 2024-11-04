@@ -43,6 +43,7 @@ export async function handleEndSession(userId, sessionId, sessions, clients, que
         if (partnerWs && partnerWs.readyState === 1) {
             partnerWs.send(JSON.stringify({
                 type: 'partnerLeft',
+                clientId: partnerUserId,
                 message: `${leavingUserId} has left the session. You will be redirected in 10 seconds if no new partner connects.`
             }));
 
@@ -53,9 +54,9 @@ export async function handleEndSession(userId, sessionId, sessions, clients, que
                 if (partnerWs.readyState === 1) {
                     partnerWs.send(JSON.stringify({
                         type: 'sessionEnded',
+                        clientId: partnerUserId,
                         message: 'Session has ended. You will be redirected to the summary page.'
                     }));
-                    partnerWs.close();
                     console.log("Partner WebSocket closed by server after timeout.");
                 }
             }, 10000); // 10-second delay

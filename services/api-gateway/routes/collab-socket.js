@@ -25,7 +25,8 @@ function getOrCreateCollabSessionConnection(sessionId) {
     if (clients && clients.has(response.clientId)) {
       const client = clients.get(response.clientId);
       if (client.readyState === WebSocket.OPEN) {
-        client.send(message); // Send the message directly to the target user
+        console.log(JSON.stringify(response))
+        client.send(JSON.stringify(response)); // Send the message directly to the target user
       } else {
         console.error(`User WebSocket for userId ${response.clientId} is not open.`);
       }

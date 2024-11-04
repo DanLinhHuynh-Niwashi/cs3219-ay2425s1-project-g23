@@ -17,11 +17,11 @@ server.listen(PORT, () => {
   console.log(`API Gateway running on http://localhost:${PORT}`);
 });
 
-wsServer.on('connection', (ws) => {
+wsServer.on('connection', (ws, req) => {
   console.log('New WebSocket connection established.');
 
   ws.on('message', (message) => {
-    handleWSMessage(ws, message);
+    handleWSMessage(ws, message, req);
   });
 
   ws.on('close', () => {

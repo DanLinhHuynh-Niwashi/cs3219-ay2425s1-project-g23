@@ -32,7 +32,8 @@ export const handleWSMessage = (ws, message, req) => {
       break;
 
       case 'collaboration':
-        const sessionId = urlParams[1];
+        const urlParams = req.url.split('/');
+        const sessionId = urlParams[2];
         if(!clientId) {
           ws.send(JSON.stringify({
             status: 500,
@@ -40,7 +41,7 @@ export const handleWSMessage = (ws, message, req) => {
           }));
           return;
         }
-        registerCollabClient(clientId, clientId, ws);
+        registerCollabClient(sessionId, clientId, ws);
         sendMessageToCollabService(sessionId, msg);
         break;
 
@@ -48,7 +49,6 @@ export const handleWSMessage = (ws, message, req) => {
         console.error('Unknown service type:', msg.service);
         ws.send(JSON.stringify({
             status: 500,
-            clientId: userId,
             message: 'Unknown service type:'
         }));
   }
