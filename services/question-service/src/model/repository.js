@@ -9,7 +9,7 @@ export async function connectToDB() {
     process.env.ENV === "PROD"
       ? process.env.DB_CLOUD_URI
       : process.env.DB_LOCAL_URI;
-
+  console.log("mongoDBUri:", mongoDBUri)
   await connect(mongoDBUri);
 }
 
@@ -58,6 +58,22 @@ export async function findQuestionById(id) {
     return question;
   } catch (error) {
     console.error('Error finding question by ID:', error);
+    throw error;
+  }
+}
+
+export async function findQuestionsByCategoryName(name) {
+  try {
+    console.log(1)
+    const category = await Category.findOne({ name: name });
+    console.log(category)
+    if (!category) {
+      return [];
+    }
+    const questions = await Question.find({ categories: category._id });
+    console.log(questions)
+    return questions
+  } catch (error) {
     throw error;
   }
 }

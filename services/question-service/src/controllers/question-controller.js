@@ -5,7 +5,8 @@ import {
     findQuestionById as _findQuestionById,
     findAllQuestions as _findAllQuestions,
     updateQuestionById as _updateQuestionById,
-    checkDuplicateQuestion as _checkDuplicateQuestion
+    checkDuplicateQuestion as _checkDuplicateQuestion,
+    findQuestionsByCategoryName as _findQuestionsByCategoryName,
   } from "../model/repository.js";
 
 export async function createQuestion(req, res) {
@@ -50,6 +51,22 @@ export async function getQuestion(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Unknown error when getting question!" });
+  }
+}
+
+export async function getRandomQuestionByCategory(req, res) {
+  try {
+    const categoryName = req.params.category;
+    const questions = await _findQuestionsByCategoryName(categoryName);
+    if (questions.length == 0) {
+      res.status(404).json({ error: 'No questions in this category, please select a different one' });
+    }
+    const randomIndex = Math.floor(Math.random() * questions.length);
+    const randomQuestion = questions[randomIndex];
+    res.json(randomQuestion);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: 'Server error' });
   }
 }
 
