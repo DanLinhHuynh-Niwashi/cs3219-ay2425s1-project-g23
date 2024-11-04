@@ -101,7 +101,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                     break;
                 case 'success':
                     // Notify match found
-                    navigate(`/session/${data.topic}/${data.sessionId}`)
+                    navigate(`/session/${data.topic}-${data.difficulty}/${data.sessionId}`)
                     handleClose(); // Close modal on successful match
                     cleanup();
                     break;
@@ -116,7 +116,6 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                     cleanup();
                 case 500:
                     // Handle error messages
-                    alert(data.message);
                     handleClose();
                     cleanup();
                     break;

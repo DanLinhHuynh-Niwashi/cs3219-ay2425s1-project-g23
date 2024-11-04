@@ -62,16 +62,13 @@ export async function findQuestionById(id) {
   }
 }
 
-export async function findQuestionsByCategoryName(name) {
+export async function findQuestionsByFilter(categoryName, difficulty) {
   try {
-    console.log(1)
-    const category = await Category.findOne({ name: name });
-    console.log(category)
+    const category = await Category.findOne({ name: categoryName });
     if (!category) {
       return [];
     }
-    const questions = await Question.find({ categories: category._id });
-    console.log(questions)
+    const questions = await Question.find({ categories: category._id, complexity: difficulty });
     return questions
   } catch (error) {
     throw error;

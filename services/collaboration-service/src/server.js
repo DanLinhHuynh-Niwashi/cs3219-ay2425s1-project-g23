@@ -1,5 +1,4 @@
-import { WebSocketServer } from 'ws'; 
-import { setupRoutes } from './routes/collab-route.js';
+import { WebSocketServer } from 'ws';
 import index, { updateDBStatus } from "./index.js";
 import "dotenv/config";
 import { connectToDB } from "./model/repository.js";
@@ -24,9 +23,6 @@ await connectToDB().then(() => {
 
 // Create a WebSocket server
 const wss = new WebSocketServer({ server });
-
-setupRoutes(wss);
-
 // Create a Map to track sessions and their participants
 const sessions = new Map();
 const clients = {};
@@ -78,16 +74,24 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         if (data.type === 'leaveSession') {
-            handleEndSession(userId, sessionId, sessions, clients);
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+        } else {
+            session.participants.forEach(client => {
+                let clientWs = clients[client]
+                if (clientWs != ws) {
+                    clientWs.send(JSON.stringify(data))
+                }
+            })
         }
     });
-    
+
     ws.on('close', (code, reason) => {
         console.log(`Connection closed for user: ${userId} with code: ${code} and reason: ${reason.toString()}`); // Debug statement
         // Remove the client from the session participants
         const session = sessions.get(sessionId);
         if (session) {
-            session.participants.delete(userId);
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+            session.participants.delete(userId)
             // Clean up participant data
             if (session.participants.size === 0) {
                 sessions.delete(sessionId); // Clean up empty sessions
