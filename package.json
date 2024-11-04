@@ -4,7 +4,8 @@
     "frontend",
     "services/question-service",
     "services/user-service",
-    "services/matching-service"
+    "services/matching-service",
+    "services/history-service"
   ],
   "scripts": {
     "start": "concurrently \"npm run start:question\" \"npm run start:user\" \"npm run start:matching\" \"npm run start:frontend\"",

@@ -8,6 +8,8 @@ const Question = lazy(() => import('./pages/Question'));
 const EditQuestion = lazy(() => import('./pages/EditQuestion'));
 const Profile = lazy(() => import('./pages/Profile'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
+const PastAttempts = lazy(() => import('./pages/PastAttempts'));
+const AttemptDetails = lazy(() => import('./pages/AttemptDetails'));
 
 //const NotFound = lazy(() => import('./pages/NotFound')); // Fallback for undefined routes
 
@@ -35,6 +37,10 @@ const AppRoutes = () => {
 
         <Route path="/profile" element={<Profile />} />
         <Route path="/editProfile" element={<EditProfile />} />
+
+        <Route path="/past-attempts" element={<PastAttempts />} /> {/* Past Attempts route */}
+        <Route path="/attempts/:id" element={<AttemptDetails />} /> {/* New route for attempt details */}
+
 
         <Route path="*" element={<div>Not Found</div>} />
       </Routes>
