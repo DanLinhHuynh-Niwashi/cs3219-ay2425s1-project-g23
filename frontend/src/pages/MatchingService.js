@@ -18,6 +18,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [showStayButton, setShowStayButton] = useState(false);
     const [isMatching, setIsMatching] = useState(false);
     const [timer, setTimer] = useState(0); // New state for timer
+    const navigate = useNavigate();
     const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
     const service = 'matching'
     useEffect(() => {
@@ -93,6 +94,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }, 10000); // 10 seconds
 
         const handleMessage = (message) => {
+            
             const data = JSON.parse(message.data);
             switch (data.status) {
                 case 'matching':
