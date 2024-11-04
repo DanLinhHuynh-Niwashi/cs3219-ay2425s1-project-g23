@@ -1,15 +1,19 @@
-import axios from 'axios';
 import WebSocket from 'ws';
 import { getMatchingServiceSocket, registerClient, unregisterClient } from '../routes/matching-socket.js';
+import { registerClient as registerCollabClient, sendMessageToCollabService } from '../routes/collab-socket.js';
 
-export const handleWSMessage = (ws, message) => {
+export const handleWSMessage = (ws, message, req) => {
   console.log(`Received message from client: ${message}`);
   const msg = JSON.parse(message);
   
   const clientId = msg.userId;
   switch (msg.service) {
     case 'matching':
-      if(!clientId) {
+      if(!clientId && !msg.ping) {
+        ws.send(JSON.stringify({
+          status: 500,
+          message: 'Unknown incoming client.'
+        }));
         return;
       }
       registerClient(clientId, ws);
@@ -26,6 +30,19 @@ export const handleWSMessage = (ws, message) => {
         }));
       }
       break;
+
+      case 'collaboration':
+        const sessionId = urlParams[1];
+        if(!clientId) {
+          ws.send(JSON.stringify({
+            status: 500,
+            message: 'Unknown incoming client.'
+          }));
+          return;
+        }
+        registerCollabClient(clientId, clientId, ws);
+        sendMessageToCollabService(sessionId, msg);
+        break;
 
     default:
         console.error('Unknown service type:', msg.service);

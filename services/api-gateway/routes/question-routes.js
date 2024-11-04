@@ -15,6 +15,7 @@ questionRoutes.post("/questions", (req, res) => handleHttpRequest(req, res, base
 questionRoutes.get("/questions/:id", (req, res) => handleHttpRequest(req, res, base_url, port, `/questions/${req.params.id}`));
 questionRoutes.patch("/questions/:id", (req, res) => handleHttpRequest(req, res, base_url, port, `/questions/${req.params.id}`));
 questionRoutes.delete("/questions/:id", (req, res) => handleHttpRequest(req, res, base_url, port, `/questions/${req.params.id}`));
+questionRoutes.get("/questions/random/:category/:difficulty", (req, res) => handleHttpRequest(req, res, base_url, port, `/questions/random/${req.params.category}/${req.params.difficulty}`))
 
 // Category routes
 questionRoutes.get("/categories", (req, res) => handleHttpRequest(req, res, base_url, port, "/categories"));

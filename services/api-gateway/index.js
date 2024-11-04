@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import questionRoutes from './routes/question-routes.js';
 import userRoutes from './routes/user-routes.js';
+import collabRoutes from './routes/collab-routes.js';
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use((req, res, next) => {
 
 app.use('/api', questionRoutes);
 app.use('/api', userRoutes);
+app.use('/api', collabRoutes);
 
 app.get("/", (req, res, next) => {
     console.log("Sending Greetings!");
