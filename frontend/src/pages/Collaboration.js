@@ -9,6 +9,35 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function getChatGPTResponse(prompt) {
+  const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+  const url = 'https://api.openai.com/v1/chat/completions';
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error("Error fetching ChatGPT response:", error);
+    return "There was an error processing your request.";
+  }
+}
+
 function Collaboration() {
   const { category, sessionId } = useParams();
   const navigate = useNavigate();
@@ -138,6 +167,11 @@ function Collaboration() {
     }
   };
 
+  const handleChatGPTSubmit = async () => {
+    const response = await getChatGPTResponse(promptInput);
+    setResponseOutput(response);
+  };
+
   return (
     <div className="collaboration-container">
       <div className="question-and-chatgpt">
@@ -158,7 +192,7 @@ function Collaboration() {
             onChange={(e) => setPromptInput(e.target.value)}
             placeholder="Ask ChatGPT..."
           />
-          <Button variant="primary" onClick={() => setResponseOutput(`Response to: ${promptInput}`)}>
+          <Button variant="primary" onClick={handleChatGPTSubmit}>
             Send
           </Button>
         </div>
