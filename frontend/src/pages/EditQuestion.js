@@ -20,7 +20,7 @@ const EditQuestion = () => {
   const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
   const [loading, setLoading] = useState(true);
 
-  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
 
   useEffect(() => {
     const fetchQuestionAndCategories = async () => {

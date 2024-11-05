@@ -11,7 +11,7 @@ function Signup() {
   });
   const [confirmPassword, setConfirmPassword] = useState('')
   const navigate = useNavigate()
-  const baseUrl = process.env.REACT_APP_USER_API_URL || 'http://localhost:3002';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log(details)

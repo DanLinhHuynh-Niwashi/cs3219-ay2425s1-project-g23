@@ -17,7 +17,7 @@ function App() {
   const { isModalOpen, closeModal } = useModal();
   const [ws, setWs] = useState(null);
   const intervalRef = useRef(null);
-  const baseUrl = process.env.REACT_APP_MATCHING_API_URL || 'ws://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
 
   useEffect(() => {
     const websocket = new WebSocket(baseUrl);
@@ -28,7 +28,7 @@ function App() {
 
       // Ping to keep connection alive
       intervalRef.current = setInterval(() => {
-        websocket.send(JSON.stringify({ ping: 1 }));
+        websocket.send(JSON.stringify({ ping: 1 , service: 'matching'}));
       }, 30000); // Send ping every 30 seconds
     };
 
@@ -70,7 +70,7 @@ function App() {
           <Route path="/*" element={<Layout />}>
             <Route path="*" element={<AppRoutes />} /> {/* Centralized routing under Layout */}
           </Route>
-          <Route path="/session/:sessionId" element={<Collaboration/>} />
+          <Route path="/session/:category/:sessionId" element={<Collaboration/>} />
           <Route path="/summary" element={<SessionSummaryPage />} /> 
         </Route>
       </Routes>
