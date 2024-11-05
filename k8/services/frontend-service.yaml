@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: frontend
 spec:
-  type: LoadBalancer
-  ports:
-  - port: 3000
-    targetPort: 3000
   selector:
-    app: frontend
+    app: frontend-service
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+  type: LoadBalancer

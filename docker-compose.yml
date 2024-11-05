@@ -33,6 +33,7 @@ services:
       context: ./services/user-service
       args:
         - PORT=${USER_PORT}
+    image: ${DOCKER_USERNAME}/user-service:latest
     ports:
       - "${USER_PORT}:${USER_PORT}"
     environment:
@@ -110,6 +111,7 @@ services:
         - MATCHING_URL=http://matching-service
         - QUESTION_URL=http://question-service
         - COLLAB_URL=http://collaboration-service
+    image: ${DOCKER_USERNAME}/api-gateway:latest
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
