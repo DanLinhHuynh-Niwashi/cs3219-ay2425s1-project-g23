@@ -63,8 +63,6 @@ function Collaboration() {
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
   const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
-
-
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
@@ -113,8 +111,7 @@ function Collaboration() {
       const filters = category.split("-");
       const response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
       const data = await response.json();
-
-      setChosenQuestion(data._id)
+      setChosenQuestion(data._id);
     };
     fetchRandomQuestion();
   }, [userId]);
