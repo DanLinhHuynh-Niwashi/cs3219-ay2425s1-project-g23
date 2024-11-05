@@ -5,7 +5,11 @@
     "services/question-service",
     "services/user-service",
     "services/matching-service",
+
     "services/collaboration-service"
+
+    "services/history-service"
+
   ],
   "scripts": {
     "start": "concurrently \"npm run start:question\" \"npm run start:user\" \"npm run start:matching\" \"npm run start:collab\" \"npm run start:gateway\" \"npm run start:frontend\"",
