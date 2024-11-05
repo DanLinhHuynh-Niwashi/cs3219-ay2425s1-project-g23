@@ -57,6 +57,7 @@ function Collaboration() {
   const [promptInput, setPromptInput] = useState('');
   const [responseOutput, setResponseOutput] = useState('');
   const [language, setLanguage] = useState('javascript');
+  const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
 
   const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
@@ -84,6 +85,7 @@ function Collaboration() {
       window.removeEventListener('popstate', handlePopState);
     };
   }, []);
+
   useEffect(() => {
     const fetchUserID = () => {
       try {
@@ -156,6 +158,23 @@ function Collaboration() {
     }
   }, [chosenQuestion, navigate]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTime((prevTime) => prevTime + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatElapsedTime = () => {
+    const hours = Math.floor(elapsedTime / 3600);
+    const minutes = Math.floor((elapsedTime % 3600) / 60);
+    const seconds = elapsedTime % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   const handleLeaveClick = () => setShowModal(true);
   
   const handleConfirmLeave = async () => {
@@ -219,8 +238,11 @@ function Collaboration() {
           </Button>
         </div>
 
-        <div className={`status ${bothConnected ? 'connected' : 'disconnected'}`}>
-          {bothConnected ? 'Connected' : 'Disconnected'}
+        <div className="session-info">
+          <div className={`status ${bothConnected ? 'connected' : 'disconnected'}`}>
+            {bothConnected ? 'Connected' : 'Disconnected'}
+          </div>
+          <div className="timer">Session Duration: {formatElapsedTime()}</div>
         </div>
         <Button variant="danger" className="leave-button" onClick={handleLeaveClick}>
           Leave Session
@@ -265,16 +287,7 @@ function Collaboration() {
         </Modal.Header>
         <Modal.Body>Your partner has left the session.</Modal.Body>
         <Modal.Footer>
-          <Button
-            variant="primary"
-            onClick={() => {
-              webSocket.close();
-              //navigateToSummary();  // Navigate to the summary page immediately
-              setShowPartnerLeftModal(false); // Close the modal
-            }}
-          >
-            Go to Summary
-          </Button>
+          <Button variant="primary" onClick={() => navigateToSummary()}>Go to Summary</Button>
         </Modal.Footer>
       </Modal>
     </div>
