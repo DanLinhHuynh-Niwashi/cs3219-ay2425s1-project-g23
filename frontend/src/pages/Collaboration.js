@@ -9,6 +9,35 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+async function getChatGPTResponse(prompt) {
+  const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+  const url = 'https://api.openai.com/v1/chat/completions';
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error("Error fetching ChatGPT response:", error);
+    return "There was an error processing your request.";
+  }
+}
+
 function Collaboration() {
   const { category, sessionId } = useParams();
   const navigate = useNavigate();
@@ -28,6 +57,7 @@ function Collaboration() {
   const [promptInput, setPromptInput] = useState('');
   const [responseOutput, setResponseOutput] = useState('');
   const [language, setLanguage] = useState('javascript');
+  const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
 
   const questionUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
@@ -57,6 +87,7 @@ function Collaboration() {
       window.removeEventListener('popstate', handlePopState);
     };
   }, []);
+
   useEffect(() => {
     const fetchUserID = () => {
       try {
@@ -140,6 +171,23 @@ function Collaboration() {
     }
   }, [chosenQuestion, navigate]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedTime((prevTime) => prevTime + 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const formatElapsedTime = () => {
+    const hours = Math.floor(elapsedTime / 3600);
+    const minutes = Math.floor((elapsedTime % 3600) / 60);
+    const seconds = elapsedTime % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   const handleLeaveClick = () => setShowModal(true);
   
   const handleConfirmLeave = async () => {
@@ -176,6 +224,11 @@ function Collaboration() {
     }
   };
 
+  const handleChatGPTSubmit = async () => {
+    const response = await getChatGPTResponse(promptInput);
+    setResponseOutput(response);
+  };
+
   return (
     <div className="collaboration-container">
       <div className="question-and-chatgpt">
@@ -196,13 +249,16 @@ function Collaboration() {
             onChange={(e) => setPromptInput(e.target.value)}
             placeholder="Ask ChatGPT..."
           />
-          <Button variant="primary" onClick={() => setResponseOutput(`Response to: ${promptInput}`)}>
+          <Button variant="primary" onClick={handleChatGPTSubmit}>
             Send
           </Button>
         </div>
 
-        <div className={`status ${bothConnected ? 'connected' : 'disconnected'}`}>
-          {bothConnected ? 'Connected' : 'Disconnected'}
+        <div className="session-info">
+          <div className={`status ${bothConnected ? 'connected' : 'disconnected'}`}>
+            {bothConnected ? 'Connected' : 'Disconnected'}
+          </div>
+          <div className="timer">Session Duration: {formatElapsedTime()}</div>
         </div>
         <Button variant="danger" className="leave-button" onClick={handleLeaveClick}>
           Leave Session
