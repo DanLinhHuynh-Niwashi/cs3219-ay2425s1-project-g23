@@ -59,9 +59,9 @@ function Collaboration() {
   const [language, setLanguage] = useState('javascript');
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
 
-  const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const questionUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
-  const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -120,17 +120,25 @@ function Collaboration() {
     const getSessionQuestion = async (id) => {
       const response = await fetch(`${questionUrl}/questions/${id}`);
       const data = await response.json();
-      if (response.status === 404) {
+      if (response.status == 404) {
+        navigate('/questions')
         alert("No questions found for the selected difficulty and topic. Please try a different combination.");
-        navigate('/questions');
+        if (webSocket)
+          webSocket.close();
       }
       setSyncedQuestion(data.data);
     };
     if (userId) {
-      let ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
+      let ws = new WebSocket(`${baseWsUrl}/${sessionId}`);
       setWebSocket(ws);
-      ws.onopen = () => console.log("WebSocket connection opened");
-      ws.onclose = () => navigateToSummary();
+      ws.onopen = () => {
+        console.log("WebSocket connection opened");
+        ws.send(JSON.stringify(
+          { type: "openSession", userId, question: chosenQuestion, sessionId: sessionId, service: "collaboration" }
+        ))
+      };
+      ws.onclose = () =>
+        console.log(`WebSocket connection closed for user ${userId}`);
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
         switch (data.type) {
@@ -146,10 +154,12 @@ function Collaboration() {
             break;
           case 'sessionEnded':
             navigateToSummary();
+            ws.close();
             break;
           case 'disconnection':
             setBothConnected(false);
             navigateToSummary();
+            ws.close();
             break;
           default:
             break;
@@ -179,10 +189,11 @@ function Collaboration() {
   
   const handleConfirmLeave = async () => {
     if (webSocket) {
-      webSocket.send(JSON.stringify({ type: "leaveSession", userId }));
+      webSocket.send(JSON.stringify({ type: "leaveSession", userId, service: "collaboration" }));  // Notify server
       setBothConnected(false);
       await sleep(100);
       navigateToSummary();
+      webSocket.close();
     }
     setShowModal(false);
   };
@@ -195,16 +206,18 @@ function Collaboration() {
         navigate(`/summary`, { state: { sessionSummary: sessionSummaryData } });
       } else {
         console.error("Failed to retrieve session summary for redirection.");
+        navigate(`/questions`)
       }
     } catch (error) {
       console.error("Error fetching session summary:", error);
+      navigate(`/questions`)
     }
   };
 
   const handleTextChange = (newText) => {
     setText(newText);
     if (webSocket) {
-      webSocket.send(JSON.stringify({ type: 'message', message: newText }));
+      webSocket.send(JSON.stringify({ type: 'message', message: newText, userId, service: "collaboration" }));
     }
   };
 
@@ -287,7 +300,15 @@ function Collaboration() {
         </Modal.Header>
         <Modal.Body>Your partner has left the session.</Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => navigateToSummary()}>Go to Summary</Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              setShowPartnerLeftModal(false); // Close the modal
+              handleConfirmLeave();
+            }}
+          >
+            Go to Summary
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>

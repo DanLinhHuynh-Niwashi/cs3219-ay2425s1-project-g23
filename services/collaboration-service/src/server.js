@@ -27,58 +27,64 @@ const wss = new WebSocketServer({ server });
 const sessions = new Map();
 const clients = {};
 
-wss.on('connection', (ws, req) => {
-    const urlParams = req.url.split('/');
-    const sessionId = urlParams[1];
-    const userId = urlParams[2];
-    const question = urlParams[3];
-
-    clients[userId] = ws; // Store the WebSocket connection
-
-    // Check if the session already exists; if not, create one
-    if (!sessions.has(sessionId)) {
-        sessions.set(sessionId, {
-            participants: new Set(),
-            joinTimes: new Map(),
-            questionId: null
-        });
-    }
-
-    // Add the connected client to the session's participant set
-    const session = sessions.get(sessionId);
-    session.participants.add(userId);
-
-    // Store the join time for the user
-    session.joinTimes.set(userId, new Date());
-
-    // Notify clients when a new client connects
-    const connectedClientsCount = session.participants.size;
-    if (connectedClientsCount == 1) {
-        session.questionId = question
-    }
-    if (connectedClientsCount === 2) {
-        for (const participant of session.participants) {
-            const client = clients[participant];
-            if (client && client.readyState === client.OPEN) {
-                client.send(JSON.stringify({
-                    type: 'connectionStatus',
-                    message: 'You are now connected to another user!',
-                    connectedClients: connectedClientsCount,
-                    question: session.questionId
-                }));
-            }
-        }
-    }
-
+wss.on('connection', (ws) => {   
+    let session = null;
+    let userId = null;
+    let question = null;
+    let sessionId = null;
     // Handle incoming messages
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         if (data.type === 'leaveSession') {
             handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+        } else if (data.type === 'openSession') {
+            sessionId = data.sessionId;
+            userId = data.userId;
+            question = data.question;
+            console.log(`Creating session...${sessionId}...`)
+            clients[userId] = ws; // Store the WebSocket connection
+
+            // Check if the session already exists; if not, create one
+            if (!sessions.has(sessionId)) {
+                sessions.set(sessionId, {
+                    participants: new Set(),
+                    joinTimes: new Map(),
+                    questionId: null
+                });
+            }
+        
+            // Add the connected client to the session's participant set
+            session = sessions.get(sessionId);
+            session.participants.add(userId);
+        
+            // Store the join time for the user
+            session.joinTimes.set(userId, new Date());
+        
+            // Notify clients when a new client connects
+            const connectedClientsCount = session.participants.size;
+            if (connectedClientsCount == 1) {
+                session.questionId = question
+            }
+            if (connectedClientsCount === 2) {
+                for (const participant of session.participants) {
+                    const client = clients[participant];
+                    if (client && client.readyState === client.OPEN) {
+                        client.send(JSON.stringify({
+                            type: 'connectionStatus',
+                            clientId: participant,
+                            message: 'You are now connected to another user!',
+                            connectedClients: connectedClientsCount,
+                            question: session.questionId
+                        }));
+                    }
+                }
+            }
         } else {
             session.participants.forEach(client => {
                 let clientWs = clients[client]
-                if (clientWs != ws) {
+                if(client != userId)
+                {
+                    data.clientId = client;
                     clientWs.send(JSON.stringify(data))
                 }
             })

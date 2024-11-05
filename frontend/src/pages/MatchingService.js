@@ -19,9 +19,8 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [isMatching, setIsMatching] = useState(false);
     const [timer, setTimer] = useState(0); // New state for timer
     const navigate = useNavigate();
-
-    const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
-
+    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+    const service = 'matching'
     useEffect(() => {
         // Timer logic
         let timerInterval = null;
@@ -95,6 +94,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }, 10000); // 10 seconds
 
         const handleMessage = (message) => {
+            
             const data = JSON.parse(message.data);
             switch (data.status) {
                 case 'matching':
@@ -103,9 +103,9 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                     break;
                 case 'success':
                     // Notify match found
-                    navigate(`/session/${data.topic}-${data.difficulty}/${data.sessionId}`)
                     handleClose(); // Close modal on successful match
                     cleanup();
+                    navigate(`/session/${data.topic}-${data.difficulty}/${data.sessionId}`)
                     break;
                 case 'timeout':
                     // Handle error messages
@@ -157,6 +157,12 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         }
 
         const requestData = {
+          event: 'joinQueue',
+          service: service,
+          userId,
+          //topics: topics,
+          topic,
+          difficulty,
             event: 'joinQueue',
             userId,
             //topics: topics,
@@ -194,6 +200,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         try {
             const requestData = {
                 event: 'leaveQueue',
+                service: service,
                 userId,
                 //topics: topics,
                 topic,
@@ -224,8 +231,16 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         setError(null);
         try {
             // Check if WebSocket is open before sending
+            const requestData = {
+                event: 'stayInQueue',
+                service: service,
+                userId,
+                //topics: topics,
+                topic,
+                difficulty,
+            };
             if (ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(JSON.stringify({ event: 'stayInQueue' }));
+                ws.send(JSON.stringify(requestData));
             } else {
                 setError('WebSocket connection is not open. Please try again later.');
             }

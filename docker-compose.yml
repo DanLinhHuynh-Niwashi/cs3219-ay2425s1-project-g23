@@ -1,7 +1,8 @@
-version: '0.1'
+version: '3.9'
 
 services:
   question-service:
+    container_name: question-service
     build: 
       context: ./services/question-service
       args:
@@ -15,17 +16,22 @@ services:
       ENV: ${ENV}                     
     depends_on:
       - question-db
+    networks:
+      - app-network
 
   question-db:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27018:27018"
+    networks:
+      - app-network
 
   user-service:
+    container_name: user-service
     build: 
-        context: ./services/user-service
-        args:
-          - PORT=${USER_PORT}
+      context: ./services/user-service
+      args:
+        - PORT=${USER_PORT}
     ports:
       - "${USER_PORT}:${USER_PORT}"
     environment:
@@ -36,16 +42,21 @@ services:
       JWT_SECRET: ${JWT_SECRET}                   
     depends_on:
       - user-db
+    networks:
+      - app-network
 
   user-db:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27019:27019"
+    networks:
+      - app-network
 
   matching-service:
+    container_name: matching-service
     build: 
-        context: ./services/matching-service
-        args:
+      context: ./services/matching-service
+      args:
         - PORT=${MATCHING_PORT}
         - REDIS_HOST=redis
         - REDIS_PORT=6379
@@ -58,11 +69,14 @@ services:
       ENV: ${ENV}
     depends_on:
       - redis
+    networks:
+      - app-network
 
   collaboration-service:
+    container_name: collaboration-service
     build: 
-        context: ./services/collaboration-service
-        args:
+      context: ./services/collaboration-service
+      args:
         - PORT=${COLLAB_PORT}
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
@@ -71,11 +85,48 @@ services:
       ENV: ${ENV}
       DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
+    networks:
+      - app-network
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
+    networks:
+      - app-network
+
+  api-gateway:
+    container_name: api-gateway
+    build:
+      context: ./services/api-gateway
+      args:
+        - PORT=${GATEWAY_PORT}
+        - MATCHING_PORT=${MATCHING_PORT}
+        - QUESTION_PORT=${QUESTION_PORT}
+        - USER_PORT=${USER_PORT}
+        - COLLAB_PORT=${COLLAB_PORT}
+        - USER_URL=http://user-service
+        - MATCHING_URL=http://matching-service
+        - QUESTION_URL=http://question-service
+        - COLLAB_URL=http://collaboration-service
+    ports:
+      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    environment:
+      PORT: ${GATEWAY_PORT}
+      MATCHING_PORT: ${MATCHING_PORT}
+      QUESTION_PORT: ${QUESTION_PORT}
+      USER_PORT: ${USER_PORT}
+      COLLAB_PORT: ${COLLAB_PORT}
+      USER_URL: http://user-service
+      MATCHING_URL: http://matching-service
+      QUESTION_URL: http://question-service
+      COLLAB_URL: http://collaboration-service
+    depends_on:
+      - question-service
+      - user-service
+      - matching-service
+    networks:
+      - app-network
 
   frontend:
     build: ./frontend
@@ -85,9 +136,9 @@ services:
       - ./frontend:/app 
       - /app/node_modules
     depends_on:
-      - user-service
-      - question-service
-      - matching-service
+      - api-gateway
+    networks:
+      - app-network
 
   history-service: 
     build: 
@@ -103,8 +154,16 @@ services:
       ENV: ${ENV}
     depends_on:
       - history-db
+    networks:
+      - app-network
 
-  history-db:  # Database for history service
+  history-db:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27020:27020"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

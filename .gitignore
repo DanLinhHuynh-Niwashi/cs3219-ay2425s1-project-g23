@@ -8,6 +8,10 @@
 # Exclude environment files
 *.env
 
+# Exclude secret deployment file
+*secret.yaml
+
+
 # Node.js dependencies
 node_modules/
 
