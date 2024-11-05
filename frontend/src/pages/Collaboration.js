@@ -30,7 +30,6 @@ function Collaboration() {
   const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
 
 
-
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       e.preventDefault();
@@ -217,7 +216,8 @@ function Collaboration() {
           <Button
             variant="primary"
             onClick={() => {
-              navigateToSummary();  // Navigate to the summary page immediately
+              webSocket.close();
+              //navigateToSummary();  // Navigate to the summary page immediately
               setShowPartnerLeftModal(false); // Close the modal
             }}
           >
