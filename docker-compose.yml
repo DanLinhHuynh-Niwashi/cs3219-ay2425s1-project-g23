@@ -7,6 +7,7 @@ services:
       context: ./services/question-service
       args:
         - PORT=${QUESTION_PORT}
+    image: ${DOCKER_USERNAME}/question-service:latest
     ports:
       - "${QUESTION_PORT}:${QUESTION_PORT}"
     environment:
@@ -62,6 +63,7 @@ services:
         - REDIS_PORT=6379
     ports:
       - "${MATCHING_PORT}:${MATCHING_PORT}"
+    image: ${DOCKER_USERNAME}/matching-service:latest
     environment:
       PORT: ${MATCHING_PORT}
       REDIS_HOST: redis
@@ -78,6 +80,7 @@ services:
         context: ./services/collaboration-service
         args:
         - PORT=${COLLAB_PORT}
+    image: ${DOCKER_USERNAME}/collaboration-service:latest
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
     environment:
@@ -128,6 +131,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: ${DOCKER_USERNAME}/frontend:latest
     ports:
       - "3000:3000" 
     volumes:
