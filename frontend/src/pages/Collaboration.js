@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Modal, Container, Row, Col, Form } from 'react-bootstrap';
-import Editor from '@monaco-editor/react';
+import { Button, Modal, Card, Badge, Form } from 'react-bootstrap';
+import MonacoEditor from '@monaco-editor/react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './Collaboration.css';
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -24,29 +25,13 @@ function Collaboration() {
   const [webSocket, setWebSocket] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [showPartnerLeftModal, setShowPartnerLeftModal] = useState(false);
+  const [promptInput, setPromptInput] = useState('');
+  const [responseOutput, setResponseOutput] = useState('');
   const [language, setLanguage] = useState('javascript');
 
   const questionUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
   const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
-
-  useEffect(() => {
-    const handleBeforeUnload = (e) => e.preventDefault();
-
-    const handlePopState = (e) => {
-      e.preventDefault();
-      window.history.pushState(null, document.title, window.location.href);
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    window.history.pushState(null, document.title, window.location.href);
-    window.addEventListener('popstate', handlePopState);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchUserID = () => {
@@ -59,7 +44,7 @@ function Collaboration() {
         }, {});
         const token = cookiesObject['token'] || '';
         const id = cookiesObject['user_id'] || '';
-        if (!token || !id) throw new Error('Invalid authentication');
+        if (!token || !id) throw new Error(`Did not retrieve cookies; invalid authentication`);
         setUserId(id);
       } catch (error) {
         console.error('Error fetching User ID:', error);
@@ -83,18 +68,16 @@ function Collaboration() {
       const response = await fetch(`${questionUrl}/questions/${id}`);
       const data = await response.json();
       if (response.status === 404) {
-        alert("No questions found. Try a different combination.");
+        alert("No questions found for the selected difficulty and topic. Please try a different combination.");
         navigate('/questions');
       }
       setSyncedQuestion(data.data);
     };
-
     if (userId) {
-      const ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
+      let ws = new WebSocket(`${baseWsUrl}/${sessionId}/${userId}/${chosenQuestion}`);
       setWebSocket(ws);
       ws.onopen = () => console.log("WebSocket connection opened");
       ws.onclose = () => navigateToSummary();
-
       ws.onmessage = (message) => {
         const data = JSON.parse(message.data);
         switch (data.type) {
@@ -109,6 +92,8 @@ function Collaboration() {
             setShowPartnerLeftModal(true);
             break;
           case 'sessionEnded':
+            navigateToSummary();
+            break;
           case 'disconnection':
             setBothConnected(false);
             navigateToSummary();
@@ -121,7 +106,7 @@ function Collaboration() {
   }, [chosenQuestion, navigate]);
 
   const handleLeaveClick = () => setShowModal(true);
-
+  
   const handleConfirmLeave = async () => {
     if (webSocket) {
       webSocket.send(JSON.stringify({ type: "leaveSession", userId }));
@@ -139,7 +124,7 @@ function Collaboration() {
         const sessionSummaryData = await response.json();
         navigate(`/summary`, { state: { sessionSummary: sessionSummaryData } });
       } else {
-        console.error("Failed to retrieve session summary.");
+        console.error("Failed to retrieve session summary for redirection.");
       }
     } catch (error) {
       console.error("Error fetching session summary:", error);
@@ -154,43 +139,59 @@ function Collaboration() {
   };
 
   return (
-    <Container fluid className="mt-5">
-      <Row className="mb-4 text-center">
-        <Col>
-          <div className={`p-4 text-white rounded ${bothConnected ? 'bg-success' : 'bg-danger'}`}>
-            {bothConnected ? 'Connected' : 'Disconnected'}
-          </div>
-        </Col>
-      </Row>
-      <Row>
-        <Col xs={4} className="text-left p-3">
-          <h3>{syncedQuestion.title}</h3>
-          <p>{syncedQuestion.description}</p>
-          <p><strong>Difficulty:</strong> {syncedQuestion.complexity}</p>
-        </Col>
-        <Col xs={8} className="p-3">
-          <Form.Group controlId="languageSelect" className="mb-3">
-            <Form.Label>Select Language</Form.Label>
-            <Form.Control as="select" value={language} onChange={(e) => setLanguage(e.target.value)}>
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-              <option value="cpp">C++</option>
-            </Form.Control>
-          </Form.Group>
-          <Editor
-            height="400px"
-            language={language}
-            value={text}
-            onChange={(value) => handleTextChange(value)}
-            theme="vs-dark"
+    <div className="collaboration-container">
+      <div className="question-and-chatgpt">
+        <Card className="question-card">
+          <Card.Body>
+            <Card.Title>{syncedQuestion.title}</Card.Title>
+            <Card.Text>{syncedQuestion.description}</Card.Text>
+            <Badge variant="info">{syncedQuestion.complexity}</Badge>
+          </Card.Body>
+        </Card>
+
+        <div className="chatgpt-box">
+          <div className="chatgpt-response">{responseOutput}</div>
+          <Form.Control
+            as="textarea"
+            rows={2}
+            value={promptInput}
+            onChange={(e) => setPromptInput(e.target.value)}
+            placeholder="Ask ChatGPT..."
           />
-        </Col>
-      </Row>
+          <Button variant="primary" onClick={() => setResponseOutput(`Response to: ${promptInput}`)}>
+            Send
+          </Button>
+        </div>
 
-      <Button variant="danger" onClick={handleLeaveClick} className="mt-3">Leave</Button>
+        <div className={`status ${bothConnected ? 'connected' : 'disconnected'}`}>
+          {bothConnected ? 'Connected' : 'Disconnected'}
+        </div>
+        <Button variant="danger" className="leave-button" onClick={handleLeaveClick}>
+          Leave Session
+        </Button>
+      </div>
 
-      {/* Confirmation modal for leaving */}
+      <div className="editor-container">
+        <MonacoEditor
+          height="100%"
+          width="100%"
+          language={language}
+          theme="vs-dark"
+          value={text}
+          onChange={handleTextChange}
+          options={{ lineNumbers: 'on', selectOnLineNumbers: true }}
+        />
+        <Form.Select
+          onChange={(e) => setLanguage(e.target.value)}
+          value={language}
+          className="language-selector"
+        >
+          <option value="javascript">JavaScript</option>
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+        </Form.Select>
+      </div>
+
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
@@ -202,17 +203,16 @@ function Collaboration() {
         </Modal.Footer>
       </Modal>
 
-      {/* Partner left notification modal */}
       <Modal show={showPartnerLeftModal} onHide={() => setShowPartnerLeftModal(false)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
         </Modal.Header>
-        <Modal.Body>Your partner has left the session. Redirecting to summary page...</Modal.Body>
+        <Modal.Body>Your partner has left the session.</Modal.Body>
         <Modal.Footer>
           <Button variant="primary" onClick={() => navigateToSummary()}>Go to Summary</Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   );
 }
 
