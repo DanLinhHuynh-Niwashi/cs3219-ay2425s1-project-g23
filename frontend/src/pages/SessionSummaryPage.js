@@ -10,7 +10,7 @@ const SessionSummaryPage = () => {
     const [sessionSummary, setSessionSummary] = useState(initialSessionSummary);
     console.log("Location state:", location.state);
 
-    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:8082';
+    const baseUrl = process.env.REACT_APP_USER_URL || 'http://localhost:8082';
 
     useEffect(() => {
         const fetchUsernames = async () => {
