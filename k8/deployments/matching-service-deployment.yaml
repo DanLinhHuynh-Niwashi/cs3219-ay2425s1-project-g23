@@ -29,5 +29,6 @@ spec:
           value: "redis"
         - name: REDIS_PORT
           value: "6379"
-        - name: ENV
-          value: "${ENV}"
+        envFrom:
+            - configMapRef:
+                name: app-config
