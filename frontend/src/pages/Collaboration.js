@@ -34,6 +34,28 @@ function Collaboration() {
   const baseUrl = process.env.REACT_APP_COLLAB_API_URL || 'http://localhost:3000';
 
   useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      e.preventDefault();
+    };
+
+    // Prevent back button navigation
+    const handlePopState = (e) => {
+      e.preventDefault();
+      window.history.pushState(null, document.title, window.location.href);
+    };
+
+    // Add event listeners
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.history.pushState(null, document.title, window.location.href);
+    window.addEventListener('popstate', handlePopState);
+
+    // Cleanup event listeners on component unmount
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+  useEffect(() => {
     const fetchUserID = () => {
       try {
         const cookie = document.cookie.split(';');
@@ -209,7 +231,16 @@ function Collaboration() {
         </Modal.Header>
         <Modal.Body>Your partner has left the session.</Modal.Body>
         <Modal.Footer>
-          <Button variant="primary" onClick={() => navigateToSummary()}>Go to Summary</Button>
+          <Button
+            variant="primary"
+            onClick={() => {
+              webSocket.close();
+              //navigateToSummary();  // Navigate to the summary page immediately
+              setShowPartnerLeftModal(false); // Close the modal
+            }}
+          >
+            Go to Summary
+          </Button>
         </Modal.Footer>
       </Modal>
     </div>
