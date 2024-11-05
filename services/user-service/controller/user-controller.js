@@ -99,7 +99,7 @@ export async function getUsernameById(req, res) {
       return res.status(404).json({ message: `User ${userId} not found` });
     }
 
-    const user = await _findUserById(userId).select('username'); // Fetch only the username
+    const user = await _findUserById(userId); // Fetch only the username
     if (!user) {
       return res.status(404).json({ message: `User ${userId} not found` });
     } else {

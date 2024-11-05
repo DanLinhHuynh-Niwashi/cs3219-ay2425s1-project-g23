@@ -1,16 +1,61 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Card, Row, Col, Button } from 'react-bootstrap';
-import './SessionSummaryPage.css'; // Assuming you create a CSS file for additional styles
+import './SessionSummaryPage.css';
 
 const SessionSummaryPage = () => {
     const location = useLocation();
-    const navigate = useNavigate(); // Initialize the navigate function
-    const { sessionSummary } = location.state || {}; // Get the session summary from state
-    console.log(sessionSummary);
+    const navigate = useNavigate();
+    const { sessionSummary: initialSessionSummary } = location.state || {};
+    const [sessionSummary, setSessionSummary] = useState(initialSessionSummary);
+    console.log("Location state:", location.state);
+
+    useEffect(() => {
+        const fetchUsernames = async () => {
+            if (initialSessionSummary && initialSessionSummary.participants) {
+                console.log("Fetching usernames with initial session summary:", initialSessionSummary);
+        
+                const updatedParticipants = await Promise.all(
+                    initialSessionSummary.participants.map(async (participant) => {
+                        try {
+                            console.log(`Fetching username for userId ${participant.userId}`);
+                            const response = await fetch(`http://localhost:3002/users/${participant.userId}/get-username/`);
+                            
+                            if (response.ok) {
+                                const responseData = await response.json();
+                                console.log(`Fetched username for userId ${participant.userId}:`, responseData.data.username);
+                                return {
+                                    ...participant,
+                                    username: responseData.data.username, 
+                                };
+                            } else {
+                                console.error(`Error fetching username for userId ${participant.userId}:`, response.statusText);
+                                return { ...participant, username: 'Unknown User' };
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching username for userId ${participant.userId}:`, error);
+                            return { ...participant, username: 'Unknown User' };
+                        }
+                    })
+                );
+        
+                console.log("Updated participants with usernames:", updatedParticipants);
+                setSessionSummary((prevSummary) => ({
+                    ...prevSummary,
+                    participants: updatedParticipants,
+                }));
+            }
+        };
+        
+    
+        if (initialSessionSummary) {
+            fetchUsernames();
+        }
+    }, [initialSessionSummary]);
+    
 
     const handleReturnToQuestions = () => {
-        navigate('/questions'); // Navigate to the questions page
+        navigate('/questions');
     };
 
     return (
@@ -23,7 +68,13 @@ const SessionSummaryPage = () => {
                             <Col>
                                 <Card.Title>Session ID: {sessionSummary.sessionId}</Card.Title>
                                 <Card.Text>
-                                <strong>Participants:</strong> {sessionSummary.participants.map(participant => participant.userId).join(', ')}
+                                    <strong>Participants:</strong>{' '}
+                                    {sessionSummary.participants.map((participant, index) => (
+                                        <span key={index}>
+                                            {participant.username || 'Unknown User'}
+                                            {index < sessionSummary.participants.length - 1 ? ', ' : ''}
+                                        </span>
+                                    ))}
                                 </Card.Text>
                                 <Card.Text>
                                     <strong>Duration:</strong> {sessionSummary.duration} seconds
@@ -56,5 +107,3 @@ const SessionSummaryPage = () => {
 };
 
 export default SessionSummaryPage;
-
-
