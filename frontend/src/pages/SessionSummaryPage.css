@@ -1,0 +1,37 @@
+.summary-card {
+    background-color: #ffffff; /* Change background color for better contrast */
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow for depth */
+    padding: 2rem; /* Add padding for spacing inside the card */
+    max-width: 600px; /* Limit the width for better aesthetics */
+    margin: 2rem auto; /* Center the card horizontally */
+    text-align: center; /* Center text within the card */
+}
+
+.summary-card h1 {
+    font-size: 2.5rem; /* Increased font size for a more impactful heading */
+    margin-bottom: 1rem;
+    color: #343a40; /* Darker color for the heading */
+}
+
+.summary-card p {
+    line-height: 1.5;
+    color: #495057; /* Slightly lighter color for the paragraph text */
+    margin-bottom: 1rem; /* Add some space below paragraphs */
+}
+
+.summary-card button {
+    background-color: #007bff; /* Bootstrap primary color for buttons */
+    color: white; /* White text for button */
+    border: none; /* Remove border */
+    border-radius: 0.25rem; /* Rounded corners */
+    padding: 0.5rem 1rem; /* Add padding to the button */
+    font-size: 1rem; /* Consistent font size */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s; /* Smooth transition on hover */
+}
+
+.summary-card button:hover {
+    background-color: #0056b3; /* Darker shade on hover */
+}

@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Nav } from 'react-bootstrap';
-import { FaUser, FaQuestion, FaSignOutAlt } from 'react-icons/fa';
+import { FaUser, FaQuestion, FaSignOutAlt, FaHistory } from 'react-icons/fa';
 import './SideMenu.css';
 import { triggerModalOpen } from '../modalState'; 
 
@@ -27,6 +27,9 @@ const SideMenu = () => {
         </Nav.Link>
         <Nav.Link className="menu-item" onClick={() => navigate('/questions')}>
           <FaQuestion className="icon" /> Questions
+        </Nav.Link>
+        <Nav.Link className="menu-item" onClick={() => navigate('/past-attempts')}>
+          <FaHistory className="icon" /> Past Attempts
         </Nav.Link>
         <Nav.Link className="menu-item" onClick={() => {
           navigate('/login');

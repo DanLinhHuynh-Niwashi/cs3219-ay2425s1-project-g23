@@ -4,16 +4,28 @@
     "frontend",
     "services/question-service",
     "services/user-service",
-    "services/matching-service"
+    "services/matching-service",
+
+    "services/collaboration-service"
+
+    "services/history-service"
+
   ],
   "scripts": {
-    "start": "concurrently \"npm run start:question\" \"npm run start:user\" \"npm run start:matching\" \"npm run start:frontend\"",
+    "start": "concurrently \"npm run start:question\" \"npm run start:user\" \"npm run start:matching\" \"npm run start:collab\" \"npm run start:gateway\" \"npm run start:frontend\"",
     "start:frontend": "cd ./frontend && npm start",
     "start:question": "cd ./services/question-service && npm start",
     "start:matching": "cd ./services/matching-service && npm start",
-    "start:user": "cd ./services/user-service && npm start"
+    "start:user": "cd ./services/user-service && npm start",
+    "start:collab": "cd ./services/collaboration-service && npm start",
+    "start:gateway": "cd ./services/api-gateway && npm start"
   },
   "devDependencies": {
     "concurrently": "^9.0.1"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
   }
 }

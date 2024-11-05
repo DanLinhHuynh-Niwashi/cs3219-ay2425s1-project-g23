@@ -14,7 +14,7 @@ const Question = () => {
   const [error, setError] = useState(null); // Add an error state
 
   // Set the base URL for API calls
-  const baseUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
 
   // Fetch question and categories details from API
   useEffect(() => {
