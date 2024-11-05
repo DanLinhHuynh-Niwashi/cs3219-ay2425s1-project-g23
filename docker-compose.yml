@@ -75,8 +75,8 @@ services:
   collaboration-service:
     container_name: collaboration-service
     build: 
-        context: ./services/collaboration-service
-        args:
+      context: ./services/collaboration-service
+      args:
         - PORT=${COLLAB_PORT}
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
@@ -85,6 +85,8 @@ services:
       ENV: ${ENV}
       DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
+    networks:
+      - app-network
 
   redis:
     image: redis:alpine
@@ -138,11 +140,6 @@ services:
     networks:
       - app-network
 
-
-networks:
-  app-network:
-    driver: bridge
-
   history-service: 
     build: 
       context: ./services/history-service
@@ -157,9 +154,16 @@ networks:
       ENV: ${ENV}
     depends_on:
       - history-db
+    networks:
+      - app-network
 
-  history-db:  # Database for history service
+  history-db:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27020:27020"
+    networks:
+      - app-network
 
+networks:
+  app-network:
+    driver: bridge
