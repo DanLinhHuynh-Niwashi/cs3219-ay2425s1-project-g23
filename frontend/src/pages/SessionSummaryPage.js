@@ -10,6 +10,8 @@ const SessionSummaryPage = () => {
     const [sessionSummary, setSessionSummary] = useState(initialSessionSummary);
     console.log("Location state:", location.state);
 
+    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:8082';
+
     useEffect(() => {
         const fetchUsernames = async () => {
             if (initialSessionSummary && initialSessionSummary.participants) {
@@ -19,7 +21,7 @@ const SessionSummaryPage = () => {
                     initialSessionSummary.participants.map(async (participant) => {
                         try {
                             console.log(`Fetching username for userId ${participant.userId}`);
-                            const response = await fetch(`http://localhost:3002/users/${participant.userId}/get-username/`);
+                            const response = await fetch(`${baseUrl}/users/${participant.userId}/get-username/`);
                             
                             if (response.ok) {
                                 const responseData = await response.json();
