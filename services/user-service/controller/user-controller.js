@@ -91,6 +91,25 @@ export async function createUserProfile(req, res) {
   }
 }
 
+export async function getUsernameById(req, res) {
+  try {
+    const userId = req.params.id;
+    
+    if (!isValidObjectId(userId)) {
+      return res.status(404).json({ message: `User ${userId} not found` });
+    }
+
+    const user = await _findUserById(userId); // Fetch only the username
+    if (!user) {
+      return res.status(404).json({ message: `User ${userId} not found` });
+    } else {
+      return res.status(200).json({ message: `Found user`, data: { username: user.username } });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when getting username!" });
+  }
+}
 
 export async function getUser(req, res) {
   try {
