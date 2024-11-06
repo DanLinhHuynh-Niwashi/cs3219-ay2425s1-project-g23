@@ -72,3 +72,30 @@
   margin-top: 10px;
   width: 100%;
 }
+
+.chat-box {
+  width: 33%;
+  max-width: 400px;
+  margin: auto;
+}
+
+.message {
+  padding: 8px
+}
+
+.message-display {
+  padding-right: 6px; 
+}
+
+.message-display::-webkit-scrollbar {
+  width: 6px; 
+}
+
+.message-display::-webkit-scrollbar-track {
+  background: transparent; 
+}
+
+.message-display::-webkit-scrollbar-thumb {
+  background-color: rgb(211, 211, 211); 
+  border-radius: 10px;
+}
