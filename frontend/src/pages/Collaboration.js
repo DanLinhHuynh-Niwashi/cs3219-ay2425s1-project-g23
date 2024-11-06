@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Modal, Card, Badge, Form } from 'react-bootstrap';
 import MonacoEditor from '@monaco-editor/react';
@@ -58,6 +58,10 @@ function Collaboration() {
   const [responseOutput, setResponseOutput] = useState('');
   const [language, setLanguage] = useState('javascript');
   const [elapsedTime, setElapsedTime] = useState(0); // Timer state in seconds
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatEndRef = useRef(null);
+
 
   const questionUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
@@ -85,6 +89,13 @@ function Collaboration() {
       window.removeEventListener('popstate', handlePopState);
     };
   }, []);
+
+  useEffect(() => {
+    // Scroll to the bottom every time a new message is added
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [chatMessages]);
 
   useEffect(() => {
     const fetchUserID = () => {
@@ -161,6 +172,12 @@ function Collaboration() {
             navigateToSummary();
             ws.close();
             break;
+          case 'chatMessage':
+            const receivedMessage = {
+              text: data.message,
+              sender: 'other'
+            };
+            setChatMessages((prevMessages) => [...prevMessages, receivedMessage]);
           default:
             break;
         }
@@ -186,7 +203,6 @@ function Collaboration() {
   };
 
   const handleLeaveClick = () => setShowModal(true);
-  
   const handleConfirmLeave = async () => {
     if (webSocket) {
       webSocket.send(JSON.stringify({ type: "leaveSession", userId, service: "collaboration" }));  // Notify server
@@ -196,6 +212,18 @@ function Collaboration() {
       webSocket.close();
     }
     setShowModal(false);
+  };
+
+  const sendMessage = () => {
+    if (chatInput.trim()) {
+      const myMessage = {
+        text: chatInput,
+        sender: 'me'
+      };
+      webSocket.send(JSON.stringify({ type: 'chatMessage', message: myMessage.text, userId, service: "collaboration" }));
+      setChatMessages((prevMessages) => [...prevMessages, myMessage]);
+      setChatInput('');
+    }
   };
 
   const navigateToSummary = async () => {
@@ -281,6 +309,39 @@ function Collaboration() {
           <option value="python">Python</option>
           <option value="java">Java</option>
         </Form.Select>
+      </div>
+
+      <div className="chat-box card" style={{ borderColor: 'rgb(211, 211, 211)' }}>
+        <div className="card-header text-center">
+          <h5>Session Chat</h5>
+        </div>
+        <div className="card-body">
+          <div className="message-display" style={{ height: '300px', overflowY: 'auto' }}>
+            {chatMessages.map((msg, index) => (
+              <div
+                key={index}
+                className={`d-flex ${msg.sender === 'me' ? 'justify-content-end' : 'justify-content-start'} mb-1`}
+              >
+                <div className={`message p-2 rounded ${msg.sender === 'me' ? 'bg-secondary text-white' : 'bg-light text-dark'}`}
+                  style={{ maxWidth: '75%', wordWrap: 'break-word' }}
+                >
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+            <div ref={chatEndRef} />
+          </div>
+          <div className="input-area d-flex mt-2">
+            <input
+              type="text"
+              className="form-control me-2"
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            />
+            <button className="btn btn-primary" onClick={sendMessage}>Send</button>
+          </div>
+        </div>
       </div>
 
       <Modal show={showModal} onHide={() => setShowModal(false)} centered>
