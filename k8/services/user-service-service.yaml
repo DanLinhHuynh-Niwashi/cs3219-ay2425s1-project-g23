@@ -3,9 +3,9 @@ kind: Service
 metadata:
   name: user-service
 spec:
-  type: ClusterIP  # Use LoadBalancer for external access (with `minikube tunnel`)
+  type: ClusterIP
   ports:
-  - port: 8080
-    targetPort: 8080
+  - port: 3002
+    targetPort: 3002
   selector:
     app: user-service

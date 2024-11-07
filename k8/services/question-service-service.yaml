@@ -5,7 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-  - port: 8081
-    targetPort: 8081
+  - port: 3001
+    targetPort: 3001
   selector:
     app: question-service
