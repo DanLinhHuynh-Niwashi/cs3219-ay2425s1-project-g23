@@ -3,6 +3,7 @@ version: '3.9'
 services:
   question-service:
     container_name: question-service
+    restart: on-failure
     build: 
       context: ./services/question-service
       args:
@@ -28,6 +29,7 @@ services:
 
   user-service:
     container_name: user-service
+    restart: on-failure
     build: 
       context: ./services/user-service
       args:
@@ -54,6 +56,7 @@ services:
 
   matching-service:
     container_name: matching-service
+    restart: on-failure
     build: 
       context: ./services/matching-service
       args:
@@ -74,6 +77,7 @@ services:
 
   collaboration-service:
     container_name: collaboration-service
+    restart: on-failure
     build: 
       context: ./services/collaboration-service
       args:
@@ -90,6 +94,7 @@ services:
 
   redis:
     image: redis:alpine
+    restart: on-failure
     ports:
       - "6379:6379"
     networks:
@@ -97,6 +102,7 @@ services:
 
   api-gateway:
     container_name: api-gateway
+    restart: on-failure
     build:
       context: ./services/api-gateway
       args:
