@@ -12,8 +12,9 @@ const AddQuestion = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [error, setError] = useState(null);
-
   const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
+  const [file, setFile] = useState(null); // State for uploaded JSON file
+  const [overrideDuplicates, setOverrideDuplicates] = useState(false); // State for checkbox
 
   const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
 
@@ -23,8 +24,7 @@ const AddQuestion = () => {
         const response = await fetch(`${baseUrl}/categories`);
         const data = await response.json();
         if (!response.ok) {
-          throw new Error
-          (`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
+          throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
         }
         
         setCategories(data.data);
@@ -41,30 +41,72 @@ const AddQuestion = () => {
     setSelectedCategories(selectedOptions.map((option) => option.value));
   };
 
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+  const handleFileUpload = async () => {
+    if (!file) {
+      setError('Please select a file to upload.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('questionsFile', file);
+
+    try {
+      setSubmitting(true);
+      let response = null;
+      if (overrideDuplicates) {
+        response = await fetch(`${baseUrl}/questions/file/upload-questions`, {
+          method: 'PATCH',
+          body: formData,
+        });
+      } else {
+        response = await fetch(`${baseUrl}/questions/file/upload-questions`, {
+          method: 'POST',
+          body: formData,
+        });
+      }
+      
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(`Failed to upload file: ${response.status} ${response.statusText} - ${result.message}`);
+      }
+
+      alert(result.message); // Show success message
+      setFile(null); // Reset file input
+      setOverrideDuplicates(false); // Reset checkbox
+    } catch (error) {
+      console.error('Error uploading file:', error.message);
+      setError(error.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
-    setError(null); // Reset error state
+    setError(null);
 
     if (!title || !description || selectedCategories.length === 0) {
       setError('Please fill in all required fields and select at least one category.');
+      setSubmitting(false);
       return;
     }
 
-    // Map selected category names to category IDs for submission
     const selectedCategoryIds = selectedCategories.map((name) => {
       const category = categories.find((cat) => cat.name === name);
       return category ? category.id : null;
-    }).filter((id) => id); // Filter out null/undefined IDs
+    }).filter((id) => id);
 
     const newQuestion = {
       title,
       description,
       complexity,
-      categories: selectedCategoryIds, // Use category IDs for submission
+      categories: selectedCategoryIds,
     };
-
-    console.log('Submitting new question:', newQuestion); // Log the new question object
 
     try {
       const response = await fetch(`${baseUrl}/questions`, {
@@ -75,13 +117,9 @@ const AddQuestion = () => {
 
       const result = await response.json();
       if (!response.ok) {
-        throw new Error
-        (`Failed to add question: ${response.status} ${response.statusText} - ${result.message}`);
+        throw new Error(`Failed to add question: ${response.status} ${response.statusText} - ${result.message}`);
       }
 
-      console.log('Result from server:', result); // Check what the server returned
-
-      // Display a success message and clear the form
       alert(result.message);
       setTitle('');
       setDescription('');
@@ -100,7 +138,7 @@ const AddQuestion = () => {
       <Row>
         <Col>
           <h2>Add New Question</h2>
-          {error && <Alert variant="danger">{error}</Alert>} {/* Display error message */}
+          {error && <Alert variant="danger">{error}</Alert>}
           <Form onSubmit={handleSubmit}>
             <Form.Group controlId="title">
               <Form.Label>Title</Form.Label>
@@ -160,11 +198,37 @@ const AddQuestion = () => {
               disabled={isSubmitting}
               variant="secondary"
               className="mt-3 ms-2"
-              onClick={() => navigate(-1)} // Navigate back to the previous page
+              onClick={() => navigate(-1)}
             >
               Cancel
             </Button>
           </Form>
+
+          <hr className="my-4" />
+
+          <h3>Or Upload JSON File</h3>
+          <Form.Group controlId="fileUpload" className="mt-3">
+            <Form.Control type="file" onChange={handleFileChange} accept=".json" disabled={isSubmitting} />
+          </Form.Group>
+
+          <Form.Group controlId="overrideDuplicates" className="mt-3">
+            <Form.Check
+              type="checkbox"
+              label="Override existing questions if duplicates found"
+              checked={overrideDuplicates}
+              onChange={(e) => setOverrideDuplicates(e.target.checked)}
+              disabled={isSubmitting}
+            />
+          </Form.Group>
+
+          <Button
+            variant="primary"
+            className="mt-3"
+            onClick={handleFileUpload}
+            disabled={isSubmitting || !file}
+          >
+            Upload JSON File
+          </Button>
         </Col>
       </Row>
     </Container>

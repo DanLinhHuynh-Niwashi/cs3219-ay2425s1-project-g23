@@ -7,10 +7,9 @@
     "services/matching-service",
     "services/collaboration-service",
     "services/history-service"
-
   ],
   "scripts": {
-    "start": "concurrently \"npm run start:question\" \"npm run start:history\"  \"npm run start:user\" \"npm run start:matching\" \"npm run start:collab\" \"npm run start:gateway\" \"npm run start:frontend\"",
+    "start": "concurrently \"npm run start:question\" \"npm run start:history\"  \"npm run start:user\" \"npm run start:gateway\" \"npm run start:frontend\"",
     "start:frontend": "cd ./frontend && npm start",
     "start:question": "cd ./services/question-service && npm start",
     "start:matching": "cd ./services/matching-service && npm start",
@@ -25,6 +24,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
-    "express": "^4.21.1"
+    "express": "^4.21.1",
+    "express-fileupload": "^1.5.1"
   }
 }

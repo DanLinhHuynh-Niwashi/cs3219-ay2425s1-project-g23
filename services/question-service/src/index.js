@@ -1,10 +1,12 @@
 import express from "express";
+import fileUpload from 'express-fileupload';
 import cors from "cors";
 
 import questionRoutes from './routes/question-routes.js';
 import categoryRoutes from './routes/category-routes.js';
 
 const app = express();
+app.use(fileUpload());
 let dbConnected = false;
 
 app.use(express.urlencoded({ extended: true }));

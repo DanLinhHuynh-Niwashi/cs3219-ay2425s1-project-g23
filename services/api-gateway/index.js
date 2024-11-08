@@ -1,5 +1,5 @@
 import express from "express";
-import cors from "cors";
+import fileUpload from 'express-fileupload';
 import cookieParser from "cookie-parser";
 import questionRoutes from './routes/question-routes.js';
 import userRoutes from './routes/user-routes.js';
@@ -10,6 +10,7 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(fileUpload());
 
 // CORS configuration for handling cookies
 app.use((req, res, next) => {

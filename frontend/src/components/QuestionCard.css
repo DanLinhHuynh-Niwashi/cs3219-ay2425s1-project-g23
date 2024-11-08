@@ -40,3 +40,8 @@
     margin-top: auto; 
   }
   
+    
+  .highlight {
+    background-color: cyan;
+    font-weight: bold;
+  }
