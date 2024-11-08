@@ -34,6 +34,9 @@ function App() {
 
     websocket.onmessage = (message) => {
       const data = JSON.parse(message.data);
+      if (message.event && message.event == 'connection-refuse') {
+        alert(message.message);
+      }
       console.log('Message from WebSocket:', data);
     };
 

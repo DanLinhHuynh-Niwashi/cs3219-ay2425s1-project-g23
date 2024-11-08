@@ -1,0 +1,17 @@
+config:
+  target: 'http://127.0.0.1:4000'  # Your server URL
+  phases:
+    - duration: 60
+      arrivalRate: 20  # Simulate 20 new requests per second
+      name: "Ramp-up phase"
+    - duration: 60
+      arrivalRate: 50  # Simulate 50 new requests per second
+      name: "Sustained load phase"
+    - duration: 30
+      arrivalRate: 100  # Simulate 100 new requests per second
+      name: "DDoS-like traffic"
+
+scenarios:
+  - flow:
+      - get:
+          url: "/api/questions"  # Your actual API endpoint

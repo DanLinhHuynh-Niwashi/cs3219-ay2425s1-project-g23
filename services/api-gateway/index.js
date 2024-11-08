@@ -4,8 +4,18 @@ import cookieParser from "cookie-parser";
 import questionRoutes from './routes/question-routes.js';
 import userRoutes from './routes/user-routes.js';
 import collabRoutes from './routes/collab-routes.js';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
+
+// Define rate limiter
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 15 minutes
+  max: 300, // Limit each IP to 100 requests per window
+  message: 'Too many requests from this IP, please try again',
+});
+
+app.use(limiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -34,6 +44,7 @@ app.use('/api', collabRoutes);
 
 app.get("/", (req, res, next) => {
     console.log("Sending Greetings!");
+    res.status(200);
     res.json({
       message: "Hello World from peerprep",
     });
@@ -47,6 +58,14 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+  if (error instanceof rateLimit.RateLimitError) {
+    return res.status(429).json({
+      error: {
+        message: error.message, // 'Too many requests from this IP, please try again later.'
+      },
+    });
+  }
+
   res.status(error.status || 500);
   res.json({
     error: {

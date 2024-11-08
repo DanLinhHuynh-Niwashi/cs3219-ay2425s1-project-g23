@@ -1,6 +1,5 @@
 import WebSocket from 'ws';
 import { getMatchingServiceSocket, registerClient, unregisterClient } from '../routes/matching-socket.js';
-import { registerClient as registerCollabClient, sendMessageToCollabService } from '../routes/collab-socket.js';
 
 export const handleWSMessage = (ws, message, req) => {
   console.log(`Received message from client: ${message}`);
@@ -30,20 +29,6 @@ export const handleWSMessage = (ws, message, req) => {
         }));
       }
       break;
-
-      case 'collaboration':
-        const urlParams = req.url.split('/');
-        const sessionId = urlParams[2];
-        if(!clientId) {
-          ws.send(JSON.stringify({
-            status: 500,
-            message: 'Unknown incoming client.'
-          }));
-          return;
-        }
-        registerCollabClient(sessionId, clientId, ws);
-        sendMessageToCollabService(sessionId, msg);
-        break;
 
     default:
         console.error('Unknown service type:', msg.service);

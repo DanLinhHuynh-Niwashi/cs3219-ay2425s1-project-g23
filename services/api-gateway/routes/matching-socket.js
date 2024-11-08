@@ -35,6 +35,8 @@ export const getMatchingServiceSocket = () => matchingServiceSocket;
 
 export const registerClient = (userID, ws) => {
   clients.set(userID, ws);
+
+  ws.removeListener('close', unregisterClient);
   ws.on('close', () => {
     unregisterClient(userID);
   });
