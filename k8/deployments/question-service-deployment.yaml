@@ -16,7 +16,7 @@ spec:
       - name: question-service
         image: wuemily/question-service:latest
         ports:
-        - containerPort: 8081
+        - containerPort: 3001
         resources:
           limits:
             cpu: 500m
@@ -24,7 +24,7 @@ spec:
             cpu: 200m
         env:
         - name: PORT
-          value: "8081"
+          value: "3001"
         envFrom:
             - configMapRef:
                 name: app-config

@@ -16,7 +16,7 @@ spec:
       - name: user-service
         image: wuemily/user-service:latest
         ports:
-        - containerPort: 8080 
+        - containerPort: 3002 
         resources:
           limits:
             cpu: 500m
@@ -24,7 +24,7 @@ spec:
             cpu: 200m
         env:
         - name: PORT
-          value: "8080"
+          value: "3002"
         envFrom:
             - configMapRef:
                 name: app-config

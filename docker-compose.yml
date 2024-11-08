@@ -144,16 +144,12 @@ services:
     networks:
       - app-network
 
-
-networks:
-  app-network:
-    driver: bridge
-
   history-service: 
     build: 
       context: ./services/history-service
       args:
         - PORT=${HISTORY_PORT}
+    image: ${DOCKER_USERNAME}/history-service:latest
     ports:
       - "${HISTORY_PORT}:${HISTORY_PORT}"
     environment:
@@ -168,4 +164,10 @@ networks:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27020:27020"
+
+networks:
+  app-network:
+    driver: bridge
+
+  
 
