@@ -54,6 +54,37 @@ export const handleWSMessage = (ws, message, req) => {
   }
 };
 
+export const handleHttpUploadFile = async (req, res, base_url, port, endpoint) => {
+  try {
+    
+    const formData = new FormData(); 
+    if (req.files && req.files.questionsFile) {
+      const fileBlob = new Blob([req.files.questionsFile.data], { type: req.files.questionsFile.mimetype });
+      formData.append("questionsFile", fileBlob, req.files.questionsFile.name);
+      console.log (formData)
+    } else {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const url = `${base_url}:${port}${endpoint}`;
+    console.log(`Routing request to ${url}.`);
+
+    // Make a POST request to the target service with the FormData
+    const response = await fetch(url, {
+      method: req.method,
+      body: formData,
+    });
+
+    const data = await response.json();
+    // Send the rest of the response to the client
+    res.status(response.status).json(data);
+
+  } catch (error) {
+    console.log(error)
+    res.status(500).json(error.message);
+  }
+};
+
 export const handleHttpRequest = async (req, res, base_url, port, endpoint) => {
   try {
     console.log(req.body)

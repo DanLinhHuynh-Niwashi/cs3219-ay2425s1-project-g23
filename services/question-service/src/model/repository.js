@@ -37,8 +37,9 @@ export async function findCategoryById(id) {
 // Create a new question
 export async function createQuestion(title, description, complexity, categories) {
   try {
+    const normalizedTitle = title.trim().replace(/\s+/g, ' ');
     const newQuestion = new Question({
-      title,
+      title: normalizedTitle,
       description,
       complexity,
       categories, // categories are an array of IDs
@@ -89,11 +90,12 @@ export async function findAllQuestions() {
 // Update a question by its ID
 export async function updateQuestionById(id, title, description, complexity, categories) {
   try {
+    const normalizedTitle = title.trim().replace(/\s+/g, ' ');
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
       {
         $set: {
-          title,
+          title: normalizedTitle,
           description,
           complexity,
           categories, 
@@ -124,16 +126,18 @@ export async function deleteQuestionById(id) {
 }
 
 // Check for duplicate question
-export async function checkDuplicateQuestion(title, description, id) {
+export async function checkDuplicateQuestion(title, id) {
   try {
+    const normalizedTitle = title.toLowerCase().trim().replace(/\s+/g, ' ');
     const existingQuestion = await Question.findOne({
-      title,
-      description,
+      $and: [
+        { title: { $regex: new RegExp(`^${normalizedTitle}$`, 'i') } },  // Case-insensitive regex for title
+      ]
     });
     if (id) {
-      return existingQuestion !== null && existingQuestion.id != id;
+      return existingQuestion !== null && existingQuestion.id != id? existingQuestion.id : null;
     }
-    return existingQuestion !== null;
+    return existingQuestion !== null? existingQuestion.id : null;
   } catch (error) {
     console.error('Error checking for duplicate question:', error);
     throw error;

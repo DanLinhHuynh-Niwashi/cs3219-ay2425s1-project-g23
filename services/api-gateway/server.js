@@ -12,7 +12,6 @@ const wsServer = new WebSocketServer({ server });
 
 connectToMatchingService();
 
-// Handle WebSocket upgrade requests
 server.listen(PORT, () => {
   console.log(`API Gateway running on http://localhost:${PORT}`);
 });
