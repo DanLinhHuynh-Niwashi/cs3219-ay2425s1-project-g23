@@ -44,4 +44,15 @@ export const registerClient = (userID, ws) => {
 
 export const unregisterClient = (userID) => {
   clients.delete(userID);
+  const requestData = {
+    event: 'leaveQueue',
+    userId:userID,
+  };
+
+  // Check if WebSocket is open before sending
+  if (matchingServiceSocket && matchingServiceSocket.readyState === WebSocket.OPEN)
+  {
+    matchingServiceSocket.send(JSON.stringify(requestData));
+  }
+  
 };

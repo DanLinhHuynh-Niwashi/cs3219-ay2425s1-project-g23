@@ -181,9 +181,20 @@ async function setMatchTimeout(ws, userId, topic, difficulty) {
 
 // Handle user leaving the queue
 async function handleLeaveQueue(ws, data) {
-    const { userId, topic, difficulty } = data;
+    let { userId, topic, difficulty } = data;
+    if ((!topic || !difficulty) && userId) {
+        const temp = requestClients.get(userId).request;
+        if (temp) {
+            if (temp.topic) {
+                topic = temp.topic;
+            }
+            if (temp.difficulty) {
+                difficulty = temp.difficulty;
+            }  
+        }
+    }
     const request = { userId, topic, difficulty };
-
+    
     try {
         await removeFromQueue(request);
 
