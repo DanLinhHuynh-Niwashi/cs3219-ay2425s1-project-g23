@@ -205,7 +205,8 @@ function Collaboration() {
   const handleLeaveClick = () => setShowModal(true);
   const handleConfirmLeave = async () => {
     if (webSocket) {
-      webSocket.send(JSON.stringify({ type: "leaveSession", userId, service: "collaboration" }));  // Notify server
+      const finalContent = text;
+      webSocket.send(JSON.stringify({ type: "leaveSession", content: finalContent, service: "collaboration" }));  // Notify server      setBothConnected(false);
       setBothConnected(false);
       await sleep(1000);
       navigateToSummary();
