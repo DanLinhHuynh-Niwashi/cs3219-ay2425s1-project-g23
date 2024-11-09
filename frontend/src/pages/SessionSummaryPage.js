@@ -60,6 +60,18 @@ const SessionSummaryPage = () => {
         navigate('/questions');
     };
 
+    const formattedDate = sessionSummary?.dateTime
+    ? new Date(sessionSummary.dateTime).toLocaleString("en-GB", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23" // 24-hour format
+      })
+    : '';
+
     return (
         <Container className="mt-4">
             <h1 className="text-center">Session Summary</h1>
@@ -79,14 +91,14 @@ const SessionSummaryPage = () => {
                                     ))}
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Duration:</strong> {sessionSummary.duration} seconds
+                                    <strong>Date Attempted:</strong> {formattedDate}
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Date:</strong> {sessionSummary.dateTime}
+                                    <strong>Duration of Attempt:</strong> {sessionSummary.duration} minutes
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Summary Notes:</strong>
-                                    <p>{sessionSummary.summaryNotes}</p>
+                                    <strong>Attempted Code:</strong>
+                                    <p>{sessionSummary.attemptedCode}</p>
                                 </Card.Text>
                             </Col>
                         </Row>

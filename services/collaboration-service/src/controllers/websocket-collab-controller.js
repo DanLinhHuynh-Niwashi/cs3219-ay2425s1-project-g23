@@ -1,9 +1,9 @@
 import SessionSummaryModel from '../model/session-summary.js';
 import { getSessionSummary } from '../model/repository.js';
 import { format } from 'date-fns';
+import axios from 'axios';
 
-
-export async function handleEndSession(userId, sessionId, sessions, clients, questionId) {
+export async function handleEndSession(userId, sessionId, sessions, clients, questionId, finalCode) {
     const existingSession = await getSessionSummary(sessionId);
     if (existingSession) {
         return;
@@ -24,18 +24,56 @@ export async function handleEndSession(userId, sessionId, sessions, clients, que
 
     // Collect data to save as session summary
     const sessionData = {
-        sessionId,
-        participants, // Include both users
+        sessionId: sessionId,
+        participants: participants, // Include both users
         // Add any other relevant data like messages or duration if available
         messages: [], // Placeholder for messages if you have them
-        duration, // Assuming you have a function to calculate duration
-        summaryNotes: 'Session summary data...', // Placeholder or dynamically created summary
-        dateTime,
-        questionId
+        duration: duration, // Assuming you have a function to calculate duration
+        dateTime: joinTime,
+        questionId: questionId,
+        attemptedCode: finalCode,
     };
-
     // Save session summary data to the database
     saveSessionSummary(sessionData);
+
+    // Create history entries for each participant
+    try {
+        console.log("leavingUserId", leavingUserId);
+        console.log("joinTime:", joinTime);
+        console.log("duration:", duration);
+        console.log("finalCode:", finalCode);
+        const historyEntryDataUser1 = {
+            userId:leavingUserId,
+            questionId,
+            attemptedDate: joinTime,
+            attemptDuration: duration,
+            attemptedCode: finalCode,
+        };
+
+        const historyEntryDataUser2 = {
+            userId: partnerUserId,
+            questionId,
+            attemptedDate: joinTime,
+            attemptDuration: duration,
+            attemptedCode: finalCode,
+        };
+
+        try {
+            const response_user1 = await axios.post(`http://history-service:8082/history`, historyEntryDataUser1);
+            console.log("History entry created successfully for user 1:", response_user1.data);
+        } catch (error) {
+            console.error("Error creating history entry for user 1:", error.message);
+        }
+
+        try {
+            const response_user2 = await axios.post(`http://history-service:8082/history`, historyEntryDataUser2);
+            console.log("History entry created successfully for user 2:", response_user2.data);
+        } catch (error) {
+            console.error("Error creating history entry for user 2:", error.message);
+        }
+    } catch (error) {
+        console.error("General error in creating history entries:", error.message);
+    }
 
     // Notify the partner user if they exist
     if (partnerUserId) {

@@ -41,7 +41,6 @@ const AppRoutes = () => {
         <Route path="/past-attempts" element={<PastAttempts />} /> {/* Past Attempts route */}
         <Route path="/attempts/:id" element={<AttemptDetails />} /> {/* New route for attempt details */}
 
-
         <Route path="*" element={<div>Not Found</div>} />
       </Routes>
     </Suspense>

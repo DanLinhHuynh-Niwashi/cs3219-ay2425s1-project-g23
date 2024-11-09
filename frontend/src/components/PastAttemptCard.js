@@ -3,7 +3,7 @@ import { Card, Badge } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import './PastAttemptCard.css';
 
-const PastAttemptCard = ({ attempt }) => {
+const PastAttemptCard = ({ attempt, categoriesDict }) => {
   const navigate = useNavigate();
 
   // Handle navigation to attempt details page
@@ -16,11 +16,34 @@ const PastAttemptCard = ({ attempt }) => {
       <Card.Body>
         <Card.Title>{attempt.title}</Card.Title>
         <Card.Text className="attempt-date">
-          Date: {new Date(attempt.attemptDateTime).toLocaleDateString()}
+          Date Attempted: {new Date(attempt.attemptDateTime).toLocaleDateString()}
         </Card.Text>
         <Card.Text className="attempt-duration">
-          Duration: {attempt.duration} mins
+          Duration of Attempt: {attempt.duration} minutes
         </Card.Text>
+        <div className="question-difficulty">
+          <Badge
+            bg={attempt.complexity === 'Easy' ? 'success' : attempt.complexity === 'Medium' ? 'warning' : 'danger'}
+          >
+            {attempt.complexity}
+          </Badge>
+        </div>
+        <div className="question-categories mt-2">
+          {attempt.categories && attempt.categories.length > 0 ? (
+            attempt.categories.map((categoryId, index) => (
+              <Badge
+                key={index}
+                bg="info"
+                className="me-1"
+                style={{ backgroundColor: '#D6BCFA' }}
+              >
+                {categoriesDict[categoryId] || "Unknown"}
+              </Badge>
+            ))
+          ) : (
+            <Badge bg="secondary">No Categories</Badge>
+          )}
+        </div>
       </Card.Body>
     </Card>
   );
