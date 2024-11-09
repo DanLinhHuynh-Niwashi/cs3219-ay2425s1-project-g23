@@ -22,14 +22,12 @@ const AttemptDetails = () => {
         
         const attemptData = await attemptResponse.json();
         setAttempt(attemptData.data);
-        console.log('Fetched attempt:', attemptData.data);
 
         const categoriesResponse = await fetch(`${categoryUrl}/categories`);
         if (!categoriesResponse.ok) throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
         
         const categoriesData = await categoriesResponse.json();
 
-        // Create categories dictionary with category.id as keys and category.name as values
         const categoriesLookup = categoriesData.data.reduce((acc, category) => {
           acc[category.name] = category.name;
           return acc;
@@ -62,10 +60,7 @@ const AttemptDetails = () => {
     minute: '2-digit',
     hour12: true, // Use 12-hour time
   });
-
-  console.log('Attempt categories in AttemptDetails:', attempt.categories);
-  console.log('Categories dict in AttemptDetails:', categoriesDict);
-
+  
   // Display the attempt details if loaded
   return (
     <Container className="attempt-detail-page" style={{ marginTop: '20px' }}>

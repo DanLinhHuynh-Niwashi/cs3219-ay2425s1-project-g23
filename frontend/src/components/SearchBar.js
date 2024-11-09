@@ -8,7 +8,7 @@ const SearchBar = ({ value, onChange }) => {
     <div className="search-bar">
       <FormControl
         type="text"
-        placeholder="Search questions..."
+        placeholder="Search..."
         value={value}
         onChange={onChange}
         className="search-input"

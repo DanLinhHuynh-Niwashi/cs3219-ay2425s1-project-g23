@@ -10,10 +10,11 @@ const PastAttempts = () => {
   const [attempts, setAttempts] = useState([]);
   const [filteredAttempts, setFilteredAttempts] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchTokens, setSearchTokens] = useState(['']);
   const [categories, setCategories] = useState([]);
   const [categoriesDict, setCategoriesDict] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const navigate = useNavigate();
+  const [selectedComplexities, setSelectedComplexities] = useState([]);
 
   const baseUrl = process.env.REACT_APP_ATTEMPT_API_URL || 'http://localhost:8082';
   const categoryUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
@@ -32,10 +33,6 @@ const PastAttempts = () => {
         const token = cookiesObject['token'] || '';
         const userId = cookiesObject['user_id'] || '';
 
-        // Log the parsed token and userId
-        console.log('Parsed token:', token);
-        console.log('Parsed userId:', userId);
-
         // Validate that token and userId are present
         if (token.length === 0 || userId.length === 0) {
           console.error('Invalid authentication: Missing token or user ID');
@@ -45,7 +42,6 @@ const PastAttempts = () => {
         // Fetch the past attempts for the specific user
         const response = await fetch(`${baseUrl}/history/user/${userId}`);
 
-        // Process the response
         const data = await response.json();
         console.log('API response:', data);  // Log full response from API
 
@@ -53,7 +49,6 @@ const PastAttempts = () => {
           throw new Error(data.message || 'Failed to fetch past attempts');
         }
 
-        // Set attempts and log the state update
         setAttempts(data.data || []);
         setFilteredAttempts(data.data || []);
         console.log('Attempts data set:', data.data || []);
@@ -76,14 +71,15 @@ const PastAttempts = () => {
         console.log("Categories data:", data);
 
         // Create a dictionary for quick category name lookup by index
-        const categoriesLookup = data.data.reduce((acc, category, index) => {
-          acc[category.name] = category.name; // Use index + 1 as key to match question categories
+        const categoriesLookup = data.data.reduce((acc, category) => {
+          acc[category.name] = category.name; 
           return acc;
         }, {});
 
         setCategories(data.data || []);
         setCategoriesDict(categoriesLookup); // Store in state
         setSelectedCategories(Object.keys(categoriesLookup)); // Select all categories by default
+        setSelectedComplexities(['Easy', 'Medium', 'Hard']);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
@@ -93,40 +89,60 @@ const PastAttempts = () => {
     fetchCategories();
   }, [baseUrl, categoryUrl]);
 
-  // Update filtered questions whenever search term or selected categories change
+  // Update filtered attempts whenever search term or selected categories change
   useEffect(() => {
     console.log("Filtering attempts...");
     filterAttempts();
-  }, [searchTerm, selectedCategories, attempts]);
+  }, [searchTerm, searchTokens, selectedCategories, selectedComplexities, attempts]);
 
   const filterAttempts = () => {
     console.log("Attempts to filter:", attempts);
     console.log("Selected categories:", selectedCategories);
-  
+    console.log("Selected complexities:", selectedComplexities);
+
+    console.log(searchTokens)
+    if (searchTokens.length == 0) {
+      setSearchTokens(['']);
+    }
+
     const filtered = attempts.filter((attempt) => {
-      // Map category IDs to names using the categoriesDict
       const attemptCategoryNames = attempt.categories
-      console.log('Attempt categories:', attempt.categories);
   
-      // Check if any of the question's category names are in the selected categories
+      // Check if any of the attempts's category names are in the selected categories
       const matchesCategory = selectedCategories.some((categoryName) => 
         attemptCategoryNames.includes(categoryName)
       );
+
+      // Check if any of the attempts's complexity are in the selected complexities
+      const matchesComplexity = selectedComplexities.some((complexity) => 
+        attempt.complexity.toLowerCase() == complexity.toLowerCase()
+      );
+
+      // Combine title and description for full-text search
+      const content = `${attempt.title.toLowerCase()} ${attempt.description.toLowerCase()}`;
   
-      // Filter by both category match and search term
-      return matchesCategory && attempt.title.toLowerCase().includes(searchTerm.toLowerCase());
+      // Check if all search tokens are found in either title or description
+      const matchesSearch = searchTokens.some(token => content.includes(token));
+  
+      // Filter by category match, compelxity match and search term
+      return matchesCategory && matchesSearch && matchesComplexity;
     });
   
     console.log("Filtered attempts:", filtered);
     setFilteredAttempts(filtered);
   };
 
-  const handleFilterChange = (selectedCategoryNames) => {
+  const handleFilterChange = (selectedCategoryNames, selectedComplexityNames) => {
+    console.log("Category filter changed:", selectedCategoryNames);
+    console.log("Complexity filter changed:", selectedComplexityNames);
     setSelectedCategories(selectedCategoryNames);
+    setSelectedComplexities(selectedComplexityNames);
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    // Tokenize the search term into words
+    setSearchTokens(e.target.value.toLowerCase().split(/\s+/).filter(token => token.trim() !== '')); // Split by whitespace
   };
 
   return (
@@ -142,6 +158,7 @@ const PastAttempts = () => {
             <AttemptsList 
               attempts={filteredAttempts} 
               categoriesDict={categoriesDict}
+              searchTokens={searchTokens}
             />
           ) : (
             <p>No past attempts available</p>
