@@ -80,6 +80,17 @@ export async function updateUserById(userId, username, email, password) {
   );
 }
 
+export async function updateUserPassword(userId, password) {
+  return UserModel.findByIdAndUpdate(
+    userId,
+    { $set: { 
+      password: password,
+      }
+    },
+    { new: true }    
+  );
+}
+
 export async function updateUserPrivilegeById(userId, isAdmin) {
   return UserModel.findByIdAndUpdate(
     userId,
