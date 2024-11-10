@@ -41,7 +41,10 @@ services:
       DB_CLOUD_URI: ${USER_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${USER_DB_LOCAL_URI}    
       ENV: ${ENV}       
-      JWT_SECRET: ${JWT_SECRET}                   
+      JWT_SECRET: ${JWT_SECRET}      
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}             
+      FRONTEND_URL: ${FRONTEND_URL}             
     depends_on:
       - user-db
     networks:

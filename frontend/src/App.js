@@ -12,6 +12,7 @@ import MatchingService from './pages/MatchingService';
 import SessionSummaryPage from './pages/SessionSummaryPage'; // Adjust the path as necessary
 
 import { useModal } from './modalState'; // Import the custom modal hook
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const { isModalOpen, closeModal } = useModal();
@@ -67,6 +68,7 @@ function App() {
         <Route element={<RedirectRoutes />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password/:token" element={<ResetPassword/>} />
         </Route>
         {/* All routes wrapped in Layout */}
         <Route element={<ProtectedRoutes />}>
