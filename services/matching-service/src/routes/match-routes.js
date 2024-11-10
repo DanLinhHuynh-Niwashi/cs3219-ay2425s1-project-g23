@@ -9,7 +9,7 @@ export function setupRoutes(wss) {
         });
 
         ws.on('close', () => {
-            handleDisconnect(ws);
+            console.log('Client disconnected');
         });
     });
 
