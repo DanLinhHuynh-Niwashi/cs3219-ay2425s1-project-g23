@@ -32,11 +32,13 @@ wss.on('connection', (ws) => {
     let userId = null;
     let question = null;
     let sessionId = null;
+    let finalCode = null;
     // Handle incoming messages
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         if (data.type === 'leaveSession') {
-            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+            finalCode = data.content;  // Capture the content
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId, finalCode);
         } else if (data.type === 'openSession') {
             sessionId = data.sessionId;
             userId = data.userId;
@@ -96,7 +98,7 @@ wss.on('connection', (ws) => {
         // Remove the client from the session participants
         const session = sessions.get(sessionId);
         if (session) {
-            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId, finalCode);
             session.participants.delete(userId)
             // Clean up participant data
             if (session.participants.size === 0) {
