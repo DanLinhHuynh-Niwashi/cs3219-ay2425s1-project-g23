@@ -41,26 +41,26 @@ const registerClient = async (userId, ws) => {
 };
 
 const sendMessageToUser = async (userId, message) => {
-    // if (requestClients.has(userId)) {
-    //     const client = requestClients.get(userId);
-    //     if (client.ws.readyState === WebSocket.OPEN) {
-    //         client.ws.send(message);
-    //         console.log(`Message sent to user ${userId}: ${message}`);
-    //     }
-    // } else {
+    if (requestClients.has(userId)) {
+        const client = requestClients.get(userId);
+        if (client.ws.readyState === WebSocket.OPEN) {
+            client.ws.send(message);
+            console.log(`Message sent to user ${userId}: ${message}`);
+        }
+    } else {
         await pubClient.publish(`user:${userId}:messages`, message);
-    // }   
+    }   
 };
 
 const handleMatchFound = async (userId) => {
-    // if (requestClients.has(userId)) {
-    //     const client = requestClients.get(userId);
-    //     if (client.ws && client.request) {
-    //         handleLeaveQueue(client.ws, client.request);
-    //     }
-    // } else {
+    if (requestClients.has(userId)) {
+        const client = requestClients.get(userId);
+        if (client.ws && client.request) {
+            handleLeaveQueue(client.ws, client.request);
+        }
+    } else {
         await pubClient.publish(`user:${userId}:matchfound`, JSON.stringify({userId}));
-    // }   
+    }   
 };
 
 export function handleMessage(ws, message) {
