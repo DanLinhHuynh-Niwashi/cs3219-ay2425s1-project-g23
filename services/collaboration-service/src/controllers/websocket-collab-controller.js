@@ -3,6 +3,7 @@ import { getSessionSummary } from '../model/repository.js';
 import { format } from 'date-fns';
 import axios from 'axios';
 
+const historyport = process.env.HISTORY_PORT || 8082
 export async function handleEndSession(userId, sessionId, sessions, clients, questionId, finalCode) {
     const existingSession = await getSessionSummary(sessionId);
     if (existingSession) {
@@ -26,7 +27,6 @@ export async function handleEndSession(userId, sessionId, sessions, clients, que
     const sessionData = {
         sessionId: sessionId,
         participants: participants, // Include both users
-        // Add any other relevant data like messages or duration if available
         messages: [], // Placeholder for messages if you have them
         duration: duration, // Assuming you have a function to calculate duration
         dateTime: joinTime,
@@ -59,14 +59,14 @@ export async function handleEndSession(userId, sessionId, sessions, clients, que
         };
 
         try {
-            const response_user1 = await axios.post(`http://history-service:8082/history`, historyEntryDataUser1);
+            const response_user1 = await axios.post(`http://history-service:${historyport}/history`, historyEntryDataUser1);
             console.log("History entry created successfully for user 1:", response_user1.data);
         } catch (error) {
             console.error("Error creating history entry for user 1:", error.message);
         }
 
         try {
-            const response_user2 = await axios.post(`http://history-service:8082/history`, historyEntryDataUser2);
+            const response_user2 = await axios.post(`http://history-service:${historyport}/history`, historyEntryDataUser2);
             console.log("History entry created successfully for user 2:", response_user2.data);
         } catch (error) {
             console.error("Error creating history entry for user 2:", error.message);

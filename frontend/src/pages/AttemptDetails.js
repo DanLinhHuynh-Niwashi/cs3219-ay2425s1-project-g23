@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Container, Row, Col } from 'react-bootstrap';
+import MonacoEditor from '@monaco-editor/react';
 import './AttemptDetails.css';
 
 const AttemptDetails = () => {
@@ -11,8 +12,8 @@ const AttemptDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = process.env.REACT_APP_ATTEMPT_API_URL || 'http://localhost:8082';
-  const categoryUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
+  const categoryUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchAttemptAndCategories = async () => {
@@ -60,11 +61,17 @@ const AttemptDetails = () => {
     minute: '2-digit',
     hour12: true, // Use 12-hour time
   });
-  
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(attempt.attemptCode).then(() => {
+      alert("Code copied to clipboard!");
+    }).catch(err => {
+      console.error("Failed to copy code: ", err);
+    });
+  };
   // Display the attempt details if loaded
   return (
-    <Container className="attempt-detail-page" style={{ marginTop: '20px' }}>
-      <Row>
+    <Container className="attempt-detail-page" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Row  style={{ height: '100%'}}>
         <Col>
           <Card
             className="mb-4"
@@ -130,10 +137,7 @@ const AttemptDetails = () => {
                   <span>No categories assigned.</span>
                 )}
               </Card.Text>
-              <Card.Text>
-                <strong>Code Attempted:</strong> <br />
-                <pre>{attempt.attemptCode}</pre>
-              </Card.Text>
+              
               <Button
                 variant="primary"
                 className="mt-3"
@@ -144,6 +148,35 @@ const AttemptDetails = () => {
             </Card.Body>
           </Card>
         </Col>
+        <Col style={{ display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'relative', height: '100%' }}>
+              <MonacoEditor
+                height="100%"
+                width="100%"
+                theme="vs-dark"
+                value={attempt.attemptCode}
+                options={{
+                readOnly: true,
+                lineNumbers: 'on',
+                minimap: { enabled: false },
+                }}
+              />
+                
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleCopyCode}
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    zIndex: 10,
+                  }}
+                >
+                  Copy Code
+                </Button>
+              </div>
+        </Col>            
       </Row>
     </Container>
   );

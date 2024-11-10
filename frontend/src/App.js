@@ -18,7 +18,7 @@ function App() {
   const { isModalOpen, closeModal } = useModal();
   const [ws, setWs] = useState(null);
   const intervalRef = useRef(null);
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+  const baseUrl = process.env.REACT_APP_MATCHING_URL || 'http://localhost:8080';
 
   useEffect(() => {
     const websocket = new WebSocket(baseUrl);

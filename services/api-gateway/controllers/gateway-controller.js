@@ -1,44 +1,3 @@
-import WebSocket from 'ws';
-import { getMatchingServiceSocket, registerClient, unregisterClient } from '../routes/matching-socket.js';
-
-export const handleWSMessage = (ws, message, req) => {
-  console.log(`Received message from client: ${message}`);
-  const msg = JSON.parse(message);
-  
-  const clientId = msg.userId;
-  switch (msg.service) {
-    case 'matching':
-      if(!clientId && !msg.ping) {
-        ws.send(JSON.stringify({
-          status: 500,
-          message: 'Unknown incoming client.'
-        }));
-        return;
-      }
-      registerClient(clientId, ws);
-      const matchingSocket = getMatchingServiceSocket();
-
-      if (matchingSocket && matchingSocket.readyState === WebSocket.OPEN) {
-        matchingSocket.send(JSON.stringify(msg));
-      } else {
-        console.error('Cannot send message to matching service: socket is not open.');
-        ws.send(JSON.stringify({
-            status: 500,
-            clientId: userId,
-            message: 'Cannot send message to matching service: socket is not open.'
-        }));
-      }
-      break;
-
-    default:
-        console.error('Unknown service type:', msg.service);
-        ws.send(JSON.stringify({
-            status: 500,
-            message: 'Unknown service type:'
-        }));
-  }
-};
-
 export const handleHttpUploadFile = async (req, res, base_url, port, endpoint) => {
   try {
     
@@ -131,7 +90,6 @@ export const handleLoginRequest = async (req, res, base_url, port, endpoint) => 
       res.cookie('token', data.data.accessToken);
       res.cookie('user_id', data.data.id.toString());
     }
-    
 
     // Send the rest of the response to the client
     res.status(response.status).json(data);

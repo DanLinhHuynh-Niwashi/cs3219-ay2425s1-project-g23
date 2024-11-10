@@ -5,6 +5,7 @@ import questionRoutes from './routes/question-routes.js';
 import userRoutes from './routes/user-routes.js';
 import collabRoutes from './routes/collab-routes.js';
 import rateLimit from 'express-rate-limit';
+import historyRoutes from "./routes/history-routes.js";
 
 const app = express();
 
@@ -41,7 +42,7 @@ app.use((req, res, next) => {
 app.use('/api', questionRoutes);
 app.use('/api', userRoutes);
 app.use('/api', collabRoutes);
-
+app.use('/api', historyRoutes);
 app.get("/", (req, res, next) => {
     console.log("Sending Greetings!");
     res.status(200);
@@ -58,14 +59,6 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
-  if (error instanceof rateLimit.RateLimitError) {
-    return res.status(429).json({
-      error: {
-        message: error.message, // 'Too many requests from this IP, please try again later.'
-      },
-    });
-  }
-
   res.status(error.status || 500);
   res.json({
     error: {
