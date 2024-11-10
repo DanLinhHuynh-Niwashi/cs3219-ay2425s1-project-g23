@@ -207,7 +207,7 @@ function Collaboration() {
     if (webSocket) {
       const finalContent = text;
       webSocket.send(JSON.stringify({ type: "leaveSession", content: finalContent, service: "collaboration" }));  // Notify server      setBothConnected(false);
-      //setBothConnected(false);
+      setBothConnected(false);
       await sleep(1000);
       navigateToSummary();
       webSocket.close();
