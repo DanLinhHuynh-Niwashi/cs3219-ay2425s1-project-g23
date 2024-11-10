@@ -1,4 +1,3 @@
-// src/modalState.js
 import { useState } from 'react';
 
 let setModalState; // Function to update modal state
