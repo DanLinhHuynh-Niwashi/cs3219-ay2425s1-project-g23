@@ -85,10 +85,12 @@ services:
       context: ./services/collaboration-service
       args:
         - PORT=${COLLAB_PORT}
+        - HISTORY_PORT=${HISTORY_PORT}
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
     environment:
       PORT: ${COLLAB_PORT}
+      HISTORY_PORT: ${HISTORY_PORT}
       ENV: ${ENV}
       DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
@@ -110,10 +112,11 @@ services:
       context: ./services/api-gateway
       args:
         - PORT=${GATEWAY_PORT}
-        - MATCHING_PORT=${MATCHING_PORT}
         - QUESTION_PORT=${QUESTION_PORT}
         - USER_PORT=${USER_PORT}
         - COLLAB_PORT=${COLLAB_PORT}
+        - HISTORY_PORT=${HISTORY_PORT}
+        - HISTORY_URL=http://history-service
         - USER_URL=http://user-service
         - QUESTION_URL=http://question-service
         - COLLAB_URL=http://collaboration-service
@@ -124,13 +127,16 @@ services:
       QUESTION_PORT: ${QUESTION_PORT}
       USER_PORT: ${USER_PORT}
       COLLAB_PORT: ${COLLAB_PORT}
+      HISTORY_PORT: ${HISTORY_PORT}
+      HISTORY_URL: http://history-service
       USER_URL: http://user-service
-      MATCHING_URL: http://matching-service
       QUESTION_URL: http://question-service
       COLLAB_URL: http://collaboration-service
     depends_on:
       - question-service
       - user-service
+      - history-service
+      - collaboration-service
     networks:
       - app-network
 
@@ -147,6 +153,8 @@ services:
       - app-network
 
   history-service: 
+    container_name: history-service
+    restart: on-failure
     build: 
       context: ./services/history-service
       args:
