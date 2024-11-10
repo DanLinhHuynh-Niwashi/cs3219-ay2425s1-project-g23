@@ -16,8 +16,7 @@ const PastAttempts = () => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedComplexities, setSelectedComplexities] = useState([]);
 
-  const baseUrl = process.env.REACT_APP_ATTEMPT_API_URL || 'http://localhost:8082';
-  const categoryUrl = process.env.REACT_APP_QUESTION_API_URL || 'http://localhost:3000';
+  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchAttempts = async () => {
@@ -59,8 +58,8 @@ const PastAttempts = () => {
 
     const fetchCategories = async () => {
       try {
-        console.log(`Fetching categories from: ${categoryUrl}/categories`);
-        const response = await fetch(`${categoryUrl}/categories`);
+        console.log(`Fetching categories from: ${baseUrl}/categories`);
+        const response = await fetch(`${baseUrl}/categories`);
         console.log("Categories response:", response);
 
         if (!response.ok) {
@@ -87,7 +86,7 @@ const PastAttempts = () => {
 
     fetchAttempts();
     fetchCategories();
-  }, [baseUrl, categoryUrl]);
+  }, [baseUrl]);
 
   // Update filtered attempts whenever search term or selected categories change
   useEffect(() => {
