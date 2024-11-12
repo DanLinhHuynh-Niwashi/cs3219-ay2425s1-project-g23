@@ -2,7 +2,7 @@
 FROM node:20-alpine
 
 ARG PORT
-
+ARG HISTORY_PORT
 WORKDIR /app
 
 COPY package*.json ./

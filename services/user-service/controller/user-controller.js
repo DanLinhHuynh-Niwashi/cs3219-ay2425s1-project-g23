@@ -13,6 +13,7 @@ import {
   updateUserPrivilegeById as _updateUserPrivilegeById,
   findUserProfileById as _findUserProfileById,
   updateUserProfileById as _updateUserProfileById,
+  updateUserPassword as _updateUserPassword,
   findUserByEmail,
 } from "../model/repository.js";
 import jwt from 'jsonwebtoken';
@@ -99,7 +100,7 @@ export async function getUsernameById(req, res) {
       return res.status(404).json({ message: `User ${userId} not found` });
     }
 
-    const user = await _findUserById(userId).select('username'); // Fetch only the username
+    const user = await _findUserById(userId); // Fetch only the username
     if (!user) {
       return res.status(404).json({ message: `User ${userId} not found` });
     } else {
@@ -233,16 +234,12 @@ export async function deleteUser(req, res) {
 export async function resetPassword(req, res) {
   try {
     const{ email } = req.body;
-
     const user = await _findUserByEmail(email);
-
     if (!user) {
       return res.status(404).json({ message: `User with this email (${email}) does not exist.`});
     }
-
     // Create a reset token (valid for 5 minutes)
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "5m" });
-
     const mail = await _sendResetPasswordEmail(email, token);
     if (mail) {
       return res.status(200).json({ message: `Password reset link sent to your email ${email}.`});
@@ -310,6 +307,36 @@ export async function getUserProfile(req, res) {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: "Unknown error when getting user profile!" });
+  }
+}
+
+export async function updateUserPassword(req, res) {
+  try {
+    const { password, token } = req.body;
+    const decodeId = jwt.verify(token, process.env.JWT_SECRET)['id'];
+    console.log(decodeId)
+    if (!isValidObjectId(decodeId)) {
+      return res.status(404).json({ message: `User ${decodeId} not found` });
+    }
+    const user = await _findUserById(decodeId);
+    if (!user) {
+      return res.status(404).json({ message: `User ${decodeId} not found` });
+    }
+    let hashedPassword;
+    if (password) {
+      const salt = bcrypt.genSaltSync(10);
+      hashedPassword = bcrypt.hashSync(password, salt);
+      const updatedUser = await _updateUserPassword(decodeId, hashedPassword);
+      return res.status(200).json({
+        message: `Updated data for user ${decodeId}`,
+        data: formatUserResponse(updatedUser),
+      });
+    } else {
+      return res.status(400).json({ message: "Password failed to update" });
+    }
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: "Unknown error when updating user!" });
   }
 }
 

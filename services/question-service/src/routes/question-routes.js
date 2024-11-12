@@ -7,6 +7,8 @@ import {
   getQuestion,
   updateQuestion,
   getRandomQuestionByCategory,
+  uploadQuestions, 
+  uploadQuestionsWithReplace
 } from "../controllers/question-controller.js";
 
 const questionRoutes = express.Router();
@@ -22,5 +24,9 @@ questionRoutes.get("/random/:category/:difficulty", getRandomQuestionByCategory)
 questionRoutes.patch("/:id", updateQuestion);
 
 questionRoutes.delete("/:id", deleteQuestion);
+
+questionRoutes.post('/file/upload-questions', uploadQuestions);
+
+questionRoutes.patch('/file/upload-questions', uploadQuestionsWithReplace);
 
 export default questionRoutes;
