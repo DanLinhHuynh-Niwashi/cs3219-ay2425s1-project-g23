@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Badge, Container, Row, Col } from 'react-bootstrap';
 import './Login.css';
+import { signupUser } from '../models/userModel';
 
 function Signup() {
   const [details, setDetails] = useState({
@@ -11,7 +12,7 @@ function Signup() {
   });
   const [confirmPassword, setConfirmPassword] = useState('')
   const navigate = useNavigate()
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log(details)
@@ -20,11 +21,7 @@ function Signup() {
       alert('Password do not match');
       return
     }
-    const response = await fetch(`${baseUrl}/users/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(details),
-    });
+    const response = await signupUser(details);
     const result = await response.json();
     if (!response.ok) {
       alert(`Error: ${result.message}`);

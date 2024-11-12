@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Container, Row, Col } from 'react-bootstrap';
 import MonacoEditor from '@monaco-editor/react';
+import { fetchCategories } from '../models/questionModel';
 import './AttemptDetails.css';
+import { fetchAttemptDetails } from '../models/historyModel';
 
 const AttemptDetails = () => {
   const { id } = useParams(); // Get the attempt ID from the URL
@@ -12,19 +14,16 @@ const AttemptDetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
-  const categoryUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
-
   useEffect(() => {
     const fetchAttemptAndCategories = async () => {
       try {
-        const attemptResponse = await fetch(`${baseUrl}/history/attempts/${id}`);
+        const attemptResponse = await fetchAttemptDetails(id);
         if (!attemptResponse.ok) throw new Error('Failed to fetch attempt details');
         
         const attemptData = await attemptResponse.json();
         setAttempt(attemptData.data);
 
-        const categoriesResponse = await fetch(`${categoryUrl}/categories`);
+        const categoriesResponse = await fetchCategories();
         if (!categoriesResponse.ok) throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
         
         const categoriesData = await categoriesResponse.json();
@@ -47,7 +46,7 @@ const AttemptDetails = () => {
     };
 
     fetchAttemptAndCategories();
-  }, [id, baseUrl, categoryUrl]);
+  }, [id]);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;

@@ -4,7 +4,8 @@ import { Button, Modal, Card, Badge, Form } from 'react-bootstrap';
 import MonacoEditor from '@monaco-editor/react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './Collaboration.css';
-
+import { fetchQuestionById, fetchRandomQuestion } from '../models/questionModel';
+import { fetchSessionSummary } from '../models/collaborationModel';
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -63,9 +64,7 @@ function Collaboration() {
   const chatEndRef = useRef(null);
 
 
-  const questionUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
   const baseWsUrl = process.env.REACT_APP_COLLAB_WS_URL || 'http://localhost:3000';
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -118,18 +117,18 @@ function Collaboration() {
   }, []);
 
   useEffect(() => {
-    const fetchRandomQuestion = async () => {
+    const getRandomQuestion = async () => {
       const filters = category.split("-");
-      const response = await fetch(`${questionUrl}/questions/random/${filters[0]}/${filters[1]}`);
+      const response = await fetchRandomQuestion(filters);
       const data = await response.json();
       setChosenQuestion(data._id);
     };
-    fetchRandomQuestion();
+    getRandomQuestion();
   }, [userId]);
 
   useEffect(() => {
     const getSessionQuestion = async (id) => {
-      const response = await fetch(`${questionUrl}/questions/${id}`);
+      const response = await fetchQuestionById(id);
       const data = await response.json();
       if (response.status == 404) {
         navigate('/questions')
@@ -229,7 +228,7 @@ function Collaboration() {
 
   const navigateToSummary = async () => {
     try {
-      const response = await fetch(`${baseUrl}/collab/session-summary/${sessionId}`);
+      const response = await fetchSessionSummary(sessionId);
       if (response.ok) {
         const sessionSummaryData = await response.json();
         navigate(`/summary`, { state: { sessionSummary: sessionSummaryData } });

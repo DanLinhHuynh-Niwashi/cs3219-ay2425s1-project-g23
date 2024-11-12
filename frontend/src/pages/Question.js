@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Container, Row, Col } from 'react-bootstrap';
 import AdminPanel from '../components/AdminPanel';
 import './Question.css';
+import { deleteQuestionById, fetchCategories, fetchQuestionById } from '../models/questionModel';
 
 const Question = () => {
   const { id } = useParams(); // Get the question ID from the URL
@@ -13,15 +14,12 @@ const Question = () => {
   const [loading, setLoading] = useState(true); // Add a loading state
   const [error, setError] = useState(null); // Add an error state
 
-  // Set the base URL for API calls
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
-
   // Fetch question and categories details from API
   useEffect(() => {
     const fetchQuestionAndCategories = async () => {
       try {
         // Fetch question details
-        const questionResponse = await fetch(`${baseUrl}/questions/${id}`);
+        const questionResponse = await fetchQuestionById(id);
         if (!questionResponse.ok) {
           throw new Error(`Error fetching question: ${questionResponse.statusText}`);
         }
@@ -29,7 +27,7 @@ const Question = () => {
         setQuestion(questionData.data);
 
         // Fetch categories details
-        const categoriesResponse = await fetch(`${baseUrl}/categories`);
+        const categoriesResponse = await fetchCategories();
         if (!categoriesResponse.ok) {
           throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
         }
@@ -51,13 +49,11 @@ const Question = () => {
     };
 
     fetchQuestionAndCategories();
-  }, [id, baseUrl]); // Re-fetch data when the ID or baseUrl changes
+  }, [id]); // Re-fetch data when the ID or baseUrl changes
 
   const deleteQuestion = async () => {
     try {
-      const response = await fetch(`${baseUrl}/questions/${id}`, {
-        method: 'DELETE',
-      });
+      const response = await deleteQuestionById(id);
 
       if (!response.ok) {
         throw new Error(`Error deleting question: ${response.statusText}`);
