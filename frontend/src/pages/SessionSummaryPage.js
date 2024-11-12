@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Card, Row, Col, Button } from 'react-bootstrap';
 import './SessionSummaryPage.css';
+import { fetchUserNameById } from '../models/userModel';
 
 const SessionSummaryPage = () => {
     const location = useLocation();
@@ -9,8 +10,6 @@ const SessionSummaryPage = () => {
     const { sessionSummary: initialSessionSummary } = location.state || {};
     const [sessionSummary, setSessionSummary] = useState(initialSessionSummary);
     console.log("Location state:", location.state);
-
-    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3002';
 
     useEffect(() => {
         const fetchUsernames = async () => {
@@ -21,7 +20,7 @@ const SessionSummaryPage = () => {
                     initialSessionSummary.participants.map(async (participant) => {
                         try {
                             console.log(`Fetching username for userId ${participant.userId}`);
-                            const response = await fetch(`${baseUrl}/users/${participant.userId}/get-username/`);
+                            const response = await fetchUserNameById(participant.userId);
                             
                             if (response.ok) {
                                 const responseData = await response.json();

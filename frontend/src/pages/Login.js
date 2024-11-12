@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Modal, Button, Form, Badge, Container, Row, Col } from 'react-bootstrap';
 import './Login.css';
+import { fetchLogin, fetchResetPassword } from '../models/userModel';
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -20,17 +21,11 @@ function Login() {
     password: '',
   });
   const navigate = useNavigate()
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log(login);
     try {
-      const response = await fetch(`${baseUrl}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(login),
-        credentials: 'include',
-      });
+      const response = await fetchLogin(login);
       const result = await response.json();
       if (!response.ok) {
         alert(`Login credentials incorrect`);
@@ -47,13 +42,7 @@ function Login() {
     setSendingEmail(true)
     e.preventDefault();
     try {
-      const response = await fetch(`${baseUrl}/users/reset-password/reset`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }), 
-      });
+      const response = await fetchResetPassword(email);
       const data = await response.json();
       console.log(data)
       if (response.ok) {

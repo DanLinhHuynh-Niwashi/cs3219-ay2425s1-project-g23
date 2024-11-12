@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button, Container, Row, Col, Alert } from 'react-bootstrap';
 import Select from 'react-select';
+import { fetchCategories, addQuestion, uploadQuestions, uploadQuestionsOverride } from '../models/questionModel.js'
 import './AddQuestion.css';
 
 const AddQuestion = () => {
@@ -16,17 +17,14 @@ const AddQuestion = () => {
   const [file, setFile] = useState(null); // State for uploaded JSON file
   const [overrideDuplicates, setOverrideDuplicates] = useState(false); // State for checkbox
 
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
-
   useEffect(() => {
-    const fetchCategories = async () => {
+    const getCategories = async () => {
       try {
-        const response = await fetch(`${baseUrl}/categories`);
+        const response = await fetchCategories();
         const data = await response.json();
         if (!response.ok) {
           throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText} - ${data.message}`);
         }
-        
         setCategories(data.data);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -34,8 +32,8 @@ const AddQuestion = () => {
       }
     };
 
-    fetchCategories();
-  }, [baseUrl]);
+    getCategories();
+  }, []);
 
   const handleCategoryChange = (selectedOptions) => {
     setSelectedCategories(selectedOptions.map((option) => option.value));
@@ -57,15 +55,9 @@ const AddQuestion = () => {
       setSubmitting(true);
       let response = null;
       if (overrideDuplicates) {
-        response = await fetch(`${baseUrl}/questions/file/upload-questions`, {
-          method: 'PATCH',
-          body: formData,
-        });
+        response = await uploadQuestionsOverride(formData);
       } else {
-        response = await fetch(`${baseUrl}/questions/file/upload-questions`, {
-          method: 'POST',
-          body: formData,
-        });
+        response = await uploadQuestions(formData);
       }
       
 
@@ -109,11 +101,7 @@ const AddQuestion = () => {
     };
 
     try {
-      const response = await fetch(`${baseUrl}/questions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newQuestion),
-      });
+      const response = await addQuestion(newQuestion);
 
       const result = await response.json();
       if (!response.ok) {

@@ -2,6 +2,7 @@
 FROM node:20-alpine
 
 ARG PORT
+ARG QUESTION_PORT
 
 WORKDIR /app
 

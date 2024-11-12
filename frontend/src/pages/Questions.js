@@ -6,6 +6,7 @@ import FilterPanel from '../components/FilterPanel';
 import QuestionsList from '../components/QuestionsList';
 import AdminPanel from '../components/AdminPanel';
 import './Questions.css';
+import { fetchCategories, fetchQuestions } from '../models/questionModel';
 
 const Questions = () => {
   const [questions, setQuestions] = useState([]);
@@ -16,15 +17,11 @@ const Questions = () => {
   const [categoriesDict, setCategoriesDict] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedComplexities, setSelectedComplexities] = useState([]);
-  const navigate = useNavigate();
 
-  // Set the base URL for API calls
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
   useEffect(() => {
-    const fetchQuestions = async () => {
+    const getQuestions = async () => {
       try {
-        console.log(`Fetching questions from: ${baseUrl}/questions`);
-        const response = await fetch(`${baseUrl}/questions`);
+        const response = await fetchQuestions();
         console.log("Questions response:", response);
 
         if (!response.ok) {
@@ -40,10 +37,9 @@ const Questions = () => {
       }
     };
 
-    const fetchCategories = async () => {
+    const getCategories = async () => {
       try {
-        console.log(`Fetching categories from: ${baseUrl}/categories`);
-        const response = await fetch(`${baseUrl}/categories`);
+        const response = await fetchCategories()
         console.log("Categories response:", response);
 
         if (!response.ok) {
@@ -68,9 +64,9 @@ const Questions = () => {
       }
     };
 
-    fetchQuestions();
-    fetchCategories();
-  }, [baseUrl]);
+    getQuestions();
+    getCategories();
+  }, []);
 
   // Update filtered questions whenever search term or selected categories change
   useEffect(() => {
@@ -126,10 +122,6 @@ const Questions = () => {
     setSearchTerm(e.target.value);
     // Tokenize the search term into words
     setSearchTokens(e.target.value.toLowerCase().split(/\s+/).filter(token => token.trim() !== '')); // Split by whitespace
-  };
-
-  const handleAddQuestion = () => {
-    navigate('/add-question'); // Navigate to Add Question page
   };
 
   return (
