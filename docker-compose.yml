@@ -8,6 +8,7 @@ services:
       context: ./services/question-service
       args:
         - PORT=${QUESTION_PORT}
+    image: ${DOCKER_USERNAME}/question-service:latest
     ports:
       - "${QUESTION_PORT}:${QUESTION_PORT}"
     environment:
@@ -34,6 +35,7 @@ services:
       context: ./services/user-service
       args:
         - PORT=${USER_PORT}
+    image: ${DOCKER_USERNAME}/user-service:latest
     ports:
       - "${USER_PORT}:${USER_PORT}"
     environment:
@@ -68,6 +70,7 @@ services:
         - REDIS_PORT=6379
     ports:
       - "${MATCHING_PORT}:${MATCHING_PORT}"
+    image: ${DOCKER_USERNAME}/matching-service:latest
     environment:
       PORT: ${MATCHING_PORT}
       REDIS_HOST: redis
@@ -85,7 +88,7 @@ services:
       context: ./services/collaboration-service
       args:
         - PORT=${COLLAB_PORT}
-        - HISTORY_PORT=${HISTORY_PORT}
+    image: ${DOCKER_USERNAME}/collaboration-service:latest
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
     environment:
@@ -120,6 +123,7 @@ services:
         - USER_URL=http://user-service
         - QUESTION_URL=http://question-service
         - COLLAB_URL=http://collaboration-service
+    image: ${DOCKER_USERNAME}/api-gateway:latest
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
@@ -142,6 +146,7 @@ services:
 
   frontend:
     build: ./frontend
+    image: ${DOCKER_USERNAME}/frontend:latest
     ports:
       - "3000:3000" 
     volumes:
@@ -159,6 +164,7 @@ services:
       context: ./services/history-service
       args:
         - PORT=${HISTORY_PORT}
+    image: ${DOCKER_USERNAME}/history-service:latest
     ports:
       - "${HISTORY_PORT}:${HISTORY_PORT}"
     environment:

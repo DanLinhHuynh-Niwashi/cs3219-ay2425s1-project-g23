@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: history-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: history-service
+  template:
+    metadata:
+      labels:
+        app: history-service
+    spec:
+      containers:
+      - name: history-service
+        image: wuemily/history-service:latest
+        ports:
+        - containerPort: 8082
+        resources:
+          limits:
+            cpu: 500m
+          requests:
+            cpu: 200m
+        env:
+        - name: PORT
+          value: "8082"
+        envFrom:
+            - configMapRef:
+                name: app-config
