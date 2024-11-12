@@ -20,7 +20,7 @@ Each microservice has its own HPA configuration file located in the `./k8` direc
 - **Step 1: Setting up Docker Images.**
 Ensure repository is cloned, and `.env` file is added. **Note:** `./k8/app-config.yaml` should hold the same ports and urls variables as the .env file. If there are discrepencies, update them to match. If you would like to change the ports for the services, you need to update ports in the app-config, and the relevant deployment and service `.yaml` files. 
     - If you want to use your own Docker Hub repository (where you will need to then push to), specify your Docker Hub ID in the .env **and** change image names in `.yaml`s in `./k8/deployments` for the microservices (so excluding redis and metrics-server deployments) to replace `wuemily` with your docker hub ID. 
-	    - After building the Docker images (e.g. with `docker compose up`), push them with:
+	    - After building the Docker images (steps 3 and 4 in `README.md`), push them with:
 `docker push dockerhubid/question-service:latest`
 `docker push dockerhubid/user-service:latest`
 `docker push dockerhubid/matching-service:latest`
