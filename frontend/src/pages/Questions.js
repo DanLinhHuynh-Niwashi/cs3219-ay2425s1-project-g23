@@ -11,9 +11,11 @@ const Questions = () => {
   const [questions, setQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchTokens, setSearchTokens] = useState(['']);
   const [categories, setCategories] = useState([]);
   const [categoriesDict, setCategoriesDict] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedComplexities, setSelectedComplexities] = useState([]);
   const navigate = useNavigate();
 
   // Set the base URL for API calls
@@ -60,6 +62,7 @@ const Questions = () => {
         setCategories(data.data || []);
         setCategoriesDict(categoriesLookup); // Store in state
         setSelectedCategories(Object.keys(categoriesLookup)); // Select all categories by default
+        setSelectedComplexities(['Easy', 'Medium', 'Hard']);
       } catch (error) {
         console.error('Error fetching categories:', error);
       }
@@ -73,36 +76,56 @@ const Questions = () => {
   useEffect(() => {
     console.log("Filtering questions...");
     filterQuestions();
-  }, [searchTerm, selectedCategories, questions]);
+  }, [searchTerm, searchTokens, selectedCategories, selectedComplexities, questions]);
 
   const filterQuestions = () => {
     console.log("Questions to filter:", questions);
     console.log("Selected categories:", selectedCategories);
-  
+    console.log("Selected complexities:", selectedComplexities);
+    
+    console.log(searchTokens)
+    if (searchTokens.length == 0) {
+      setSearchTokens(['']);
+    }
     const filtered = questions.filter((q) => {
       // Map category IDs to names using the categoriesDict
       const questionCategoryNames = q.categories.map(categoryId => categoriesDict[categoryId]);
-  
+      
       // Check if any of the question's category names are in the selected categories
       const matchesCategory = selectedCategories.some((categoryName) => 
         questionCategoryNames.includes(categoryName)
       );
   
+      // Check if any of the question's category names are in the selected categories
+      const matchesComplexity = selectedComplexities.some((complexity) => 
+        q.complexity.toLowerCase() == complexity.toLowerCase()
+      );
+
+      // Combine title and description for full-text search
+      const content = `${q.title.toLowerCase()} ${q.description.toLowerCase()}`;
+  
+      // Check if all search tokens are found in either title or description
+      const matchesSearch = searchTokens.some(token => content.includes(token));
+  
       // Filter by both category match and search term
-      return matchesCategory && q.title.toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch && matchesComplexity;
     });
   
     console.log("Filtered questions:", filtered);
     setFilteredQuestions(filtered);
   };
 
-  const handleFilterChange = (selectedCategoryNames) => {
+  const handleFilterChange = (selectedCategoryNames, selectedComplexityNames) => {
     console.log("Category filter changed:", selectedCategoryNames);
+    console.log("Complexity filter changed:", selectedComplexityNames);
     setSelectedCategories(selectedCategoryNames);
+    setSelectedComplexities(selectedComplexityNames);
   };
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
+    // Tokenize the search term into words
+    setSearchTokens(e.target.value.toLowerCase().split(/\s+/).filter(token => token.trim() !== '')); // Split by whitespace
   };
 
   const handleAddQuestion = () => {
@@ -129,6 +152,7 @@ const Questions = () => {
             <QuestionsList
               questions={filteredQuestions}
               categoriesDict={categoriesDict} // Pass category dictionary for lookup
+              searchTokens={searchTokens}
             />
           ) : (
             <p>No questions available</p>

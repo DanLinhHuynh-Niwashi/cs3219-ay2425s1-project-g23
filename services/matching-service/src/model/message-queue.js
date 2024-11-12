@@ -1,49 +1,7 @@
-// Connect to Redis
-import { createClient } from 'redis';
-const HOST = process.env.REDIS_HOST || '127.0.0.1'
-const PORT = process.env.REDIS_PORT || 6379
-const redisClient = createClient({
-    url: `redis://${HOST}:${PORT}`,
-});
+import { redisClient } from './redisClient.js';
+
 const keys = [];
 const ACTIVE_REQUESTS_SET = 'activeRequests'; // Set for storing active user IDs
-
-// Async function to connect to Redis
-export async function initializeRedis() {
-    // Listen for connection events
-    redisClient.on('connect', () => {
-        console.log(`Connected to Redis on redis://${HOST}:${PORT}`);
-        redisClient.flushAll();
-    });
-
-    redisClient.on('end', () => {
-        console.log('Redis connection closed');
-    });
-
-    redisClient.on('error', (err) => {
-        console.error('Redis error:', err);
-    });
-
-    try {
-        // Connect to Redis
-        await redisClient.connect();
-        console.log('Redis client connected successfully');
-    } catch (err) {
-        console.error('Failed to connect to Redis:', err);
-    }
-}
-
-export async function flushRedis() {
-    if (redisClient.isOpen) {
-        await redisClient.flushAll();
-    }
-}
-
-export async function quitRedis() {
-    if (redisClient.isOpen) {
-        await redisClient.quit();
-    }
-}
 
 // Log the current items in a specific queue
 async function logActiveQueue() {

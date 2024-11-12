@@ -36,6 +36,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     }, [isMatching]);
 
     useEffect(() => {
+        
         // get user id
         const fetchUserID = async () => {
             try {
@@ -81,9 +82,11 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
                 setLoading(false);
             }
         };
-
-        fetchUserID();
-        fetchCategories();
+        if (showModal)
+        {
+            fetchUserID();
+            fetchCategories();
+        }
 
         if (!ws) return; // Exit if WebSocket is not available
 
@@ -163,11 +166,6 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
           //topics: topics,
           topic,
           difficulty,
-            event: 'joinQueue',
-            userId,
-            //topics: topics,
-            topic,
-            difficulty,
         };
 
         if (ws && ws.readyState === WebSocket.OPEN) {

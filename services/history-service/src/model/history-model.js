@@ -38,16 +38,6 @@ const HistorySchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    /*suggestedSolutions: [{
-        type: String,
-        required: false, // Suggested solutions might not always be available
-        validate: {
-            validator: function (url) {
-                return /^(ftp|http|https):\/\/[^ "]+$/.test(url); // Basic URL validation
-            },
-            message: 'Suggested solutions must be valid URLs.',
-        },
-    }],*/
 });
 
 export default mongoose.model('History', HistorySchema, 'history-attempts');

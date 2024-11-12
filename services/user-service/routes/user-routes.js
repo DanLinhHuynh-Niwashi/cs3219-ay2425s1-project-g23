@@ -11,6 +11,8 @@ import {
   updateUserProfile,
   resetPassword,
   getUserProfile,
+  getUsernameById,
+  updateUserPassword
 } from "../controller/user-controller.js";
 import { verifyAccessToken, verifyIsAdmin, verifyIsOwnerOrAdmin } from "../middleware/basic-access-control.js";
 
@@ -26,13 +28,17 @@ router.post("/:id", createUserProfile);
 
 router.get("/:id", verifyAccessToken, verifyIsOwnerOrAdmin, getUser);
 
+router.get("/:id/get-username", getUsernameById);
+
 router.patch("/:id", verifyAccessToken, verifyIsOwnerOrAdmin, updateUser);
 
 router.delete("/:id", verifyAccessToken, verifyIsOwnerOrAdmin, deleteUser);
 
-router.post("/reset-password", resetPassword);
+router.post("/reset-password/reset", resetPassword);
 
 router.patch('/:id/user-profile/', updateUserProfile);
+
+router.patch('/update-password/update', updateUserPassword);
 
 router.get('/:id/user-profile', verifyAccessToken, verifyIsOwnerOrAdmin, getUserProfile);
 

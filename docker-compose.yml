@@ -3,6 +3,7 @@ version: '3.9'
 services:
   question-service:
     container_name: question-service
+    restart: on-failure
     build: 
       context: ./services/question-service
       args:
@@ -29,6 +30,7 @@ services:
 
   user-service:
     container_name: user-service
+    restart: on-failure
     build: 
       context: ./services/user-service
       args:
@@ -41,7 +43,10 @@ services:
       DB_CLOUD_URI: ${USER_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${USER_DB_LOCAL_URI}    
       ENV: ${ENV}       
-      JWT_SECRET: ${JWT_SECRET}                   
+      JWT_SECRET: ${JWT_SECRET}      
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}             
+      FRONTEND_URL: ${FRONTEND_URL}             
     depends_on:
       - user-db
     networks:
@@ -56,6 +61,7 @@ services:
 
   matching-service:
     container_name: matching-service
+    restart: on-failure
     build: 
       context: ./services/matching-service
       args:
@@ -77,21 +83,26 @@ services:
 
   collaboration-service:
     container_name: collaboration-service
+    restart: on-failure
     build: 
-        context: ./services/collaboration-service
-        args:
+      context: ./services/collaboration-service
+      args:
         - PORT=${COLLAB_PORT}
     image: ${DOCKER_USERNAME}/collaboration-service:latest
     ports:
       - "${COLLAB_PORT}:${COLLAB_PORT}"
     environment:
       PORT: ${COLLAB_PORT}
+      HISTORY_PORT: ${HISTORY_PORT}
       ENV: ${ENV}
       DB_CLOUD_URI: ${COLLAB_DB_CLOUD_URI}     
       DB_LOCAL_URI: ${COLLAB_DB_LOCAL_URI}  
+    networks:
+      - app-network
 
   redis:
     image: redis:alpine
+    restart: on-failure
     ports:
       - "6379:6379"
     networks:
@@ -99,16 +110,17 @@ services:
 
   api-gateway:
     container_name: api-gateway
+    restart: on-failure
     build:
       context: ./services/api-gateway
       args:
         - PORT=${GATEWAY_PORT}
-        - MATCHING_PORT=${MATCHING_PORT}
         - QUESTION_PORT=${QUESTION_PORT}
         - USER_PORT=${USER_PORT}
         - COLLAB_PORT=${COLLAB_PORT}
+        - HISTORY_PORT=${HISTORY_PORT}
+        - HISTORY_URL=http://history-service
         - USER_URL=http://user-service
-        - MATCHING_URL=http://matching-service
         - QUESTION_URL=http://question-service
         - COLLAB_URL=http://collaboration-service
     image: ${DOCKER_USERNAME}/api-gateway:latest
@@ -116,18 +128,19 @@ services:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
     environment:
       PORT: ${GATEWAY_PORT}
-      MATCHING_PORT: ${MATCHING_PORT}
       QUESTION_PORT: ${QUESTION_PORT}
       USER_PORT: ${USER_PORT}
       COLLAB_PORT: ${COLLAB_PORT}
+      HISTORY_PORT: ${HISTORY_PORT}
+      HISTORY_URL: http://history-service
       USER_URL: http://user-service
-      MATCHING_URL: http://matching-service
       QUESTION_URL: http://question-service
       COLLAB_URL: http://collaboration-service
     depends_on:
       - question-service
       - user-service
-      - matching-service
+      - history-service
+      - collaboration-service
     networks:
       - app-network
 
@@ -145,6 +158,8 @@ services:
       - app-network
 
   history-service: 
+    container_name: history-service
+    restart: on-failure
     build: 
       context: ./services/history-service
       args:
@@ -159,15 +174,16 @@ services:
       ENV: ${ENV}
     depends_on:
       - history-db
+    networks:
+      - app-network
 
-  history-db:  # Database for history service
+  history-db:
     image: mongodb/mongodb-atlas-local
     ports:
       - "27020:27020"
+    networks:
+      - app-network
 
 networks:
   app-network:
     driver: bridge
-
-  
-

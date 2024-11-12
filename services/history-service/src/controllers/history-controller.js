@@ -4,7 +4,12 @@ import { fetchQuestionById, findAttemptById, findAllAttempts, fetchCategoryById 
 
 // Create a new history record
 export async function createHistoryEntry(req, res) {
-  const { userId, questionId, attemptCode, suggestedSolutions } = req.body;
+  const { userId, questionId, attemptedDate, attemptDuration, attemptedCode} = req.body;
+
+  console.log("userId:", userId);
+  console.log("attemptDuration:", attemptDuration);
+  console.log("attemptedDate:", attemptedDate);
+  console.log("attemptedCode:", attemptedCode);
 
   try {
     // Fetch question details from the Question service
@@ -16,16 +21,15 @@ export async function createHistoryEntry(req, res) {
 
     // Construct history entry
     const historyEntry = new History({
-      userId,
-      questionId,
+      userId: userId,
+      questionId: questionId,
       title: questionDetails.title,
       description: questionDetails.description,
-      duration: 2,
+      duration: attemptDuration,
       complexity: questionDetails.complexity,
       categories: categoryNames,
-      attemptDateTime: new Date(),
-      attemptCode,
-      suggestedSolutions,
+      attemptDateTime: attemptedDate,
+      attemptCode: attemptedCode,
     });
 
     // Save the history entry to the database
@@ -85,7 +89,6 @@ export function formatAttemptResponse(attempt) {
     categories: attempt.categories,
     attemptDateTime: attempt.attemptDateTime,
     attemptCode: attempt.attemptCode,
-    // Uncomment the following line if `suggestedSolutions` are included in the schema
-    // suggestedSolutions: attempt.suggestedSolutions,
+    duration: attempt.duration,
   };
 }

@@ -1,8 +1,6 @@
 import express from 'express';
-import WebSocket from 'ws'; 
 import { fetchSessionSummary } from '../controllers/websocket-collab-controller.js';
 import SessionSummaryModel from '../model/session-summary.js'; // Adjust the path as necessary
-let sessions = {}; // {SessionID : {UserID1 : WebSocket1, UserID2 : WebSocket2}}
 
 const collabRoutes = express.Router();
 
