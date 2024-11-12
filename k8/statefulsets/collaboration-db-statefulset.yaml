@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: collaboration-db
+spec:
+  serviceName: "collaboration-db"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: collaboration-db
+  template:
+    metadata:
+      labels:
+        app: collaboration-db
+    spec:
+      containers:
+      - name: collaboration-db
+        image: mongodb/mongodb-atlas-local
+        ports:
+        - containerPort: 27017  # Default MongoDB port
