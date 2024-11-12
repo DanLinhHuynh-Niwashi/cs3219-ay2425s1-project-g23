@@ -19,7 +19,7 @@ async function startServer() {
       server.listen(port);
       serverStarted = true;
     }
-    console.log("Question service server listening on http://localhost:" + port);
+    console.log("User service server listening on http://localhost:" + port);
   }).catch((err) => {
     console.error("Failed to connect to DB");
     console.error(err);
