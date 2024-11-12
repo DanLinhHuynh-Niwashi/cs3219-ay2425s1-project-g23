@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Form, Button, Badge, Container, Alert } from 'react-bootstrap';
 import Select from 'react-select';
 import './EditQuestion.css';
+import { editQuestion, fetchCategories, fetchQuestionById } from '../models/questionModel';
 
 const EditQuestion = () => {
   const { id } = useParams(); // Get question ID from URL
@@ -20,13 +21,11 @@ const EditQuestion = () => {
   const [isSubmitting, setSubmitting] = useState(false); // State for submit loading
   const [loading, setLoading] = useState(true);
 
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
-
   useEffect(() => {
     const fetchQuestionAndCategories = async () => {
       try {
         // Fetch question details
-        const questionResponse = await fetch(`${baseUrl}/questions/${id}`);
+        const questionResponse = await fetchQuestionById(id);
         const questionData = await questionResponse.json();
         if (!questionResponse.ok) {
           throw new Error
@@ -40,7 +39,7 @@ const EditQuestion = () => {
         setSelectedCategories(questionData.data.categories); // Set selected categories as IDs initially
 
         // Fetch categories details
-        const categoriesResponse = await fetch(`${baseUrl}/categories`);
+        const categoriesResponse = await fetchCategories();
         const categoriesData = await categoriesResponse.json();
         if (!categoriesResponse.ok) {
           throw new Error
@@ -70,7 +69,7 @@ const EditQuestion = () => {
     };
 
     fetchQuestionAndCategories();
-  }, [id, baseUrl]);
+  }, [id]);
 
   const handleCategoryChange = (selectedOptions) => {
     setSelectedCategories(selectedOptions.map(option => option.value));
@@ -87,13 +86,7 @@ const EditQuestion = () => {
     };
 
     try {
-      const response = await fetch(`${baseUrl}/questions/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedQuestion),
-      });
+      const response = await editQuestion(id, updatedQuestion);
 
       const result = await response.json();
       if (!response.ok) {

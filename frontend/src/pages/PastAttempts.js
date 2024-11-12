@@ -5,6 +5,8 @@ import SearchBar from '../components/SearchBar';
 import FilterPanel from '../components/FilterPanel';
 import AttemptsList from '../components/PastAttemptsList'; 
 import './PastAttempts.css';
+import { fetchAttemptsById } from '../models/historyModel';
+import { fetchCategories } from '../models/questionModel';
 
 const PastAttempts = () => {
   const [attempts, setAttempts] = useState([]);
@@ -15,8 +17,6 @@ const PastAttempts = () => {
   const [categoriesDict, setCategoriesDict] = useState({});
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [selectedComplexities, setSelectedComplexities] = useState([]);
-
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:3000';
 
   useEffect(() => {
     const fetchAttempts = async () => {
@@ -39,7 +39,7 @@ const PastAttempts = () => {
         }
 
         // Fetch the past attempts for the specific user
-        const response = await fetch(`${baseUrl}/history/user/${userId}`);
+        const response = await fetchAttemptsById(userId);
 
         const data = await response.json();
         console.log('API response:', data);  // Log full response from API
@@ -56,10 +56,9 @@ const PastAttempts = () => {
       }
     };
 
-    const fetchCategories = async () => {
+    const getCategories = async () => {
       try {
-        console.log(`Fetching categories from: ${baseUrl}/categories`);
-        const response = await fetch(`${baseUrl}/categories`);
+        const response = await fetchCategories();
         console.log("Categories response:", response);
 
         if (!response.ok) {
@@ -85,8 +84,8 @@ const PastAttempts = () => {
     };
 
     fetchAttempts();
-    fetchCategories();
-  }, [baseUrl]);
+    getCategories();
+  }, []);
 
   // Update filtered attempts whenever search term or selected categories change
   useEffect(() => {

@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Form, Button, Badge, Container, Row, Col } from 'react-bootstrap';
 import './EditProfile.css';
 import profileImage from '../img/default_profile.jpg';
-
+import { fetchUserProfile, updateUserProfile} from '../models/userModel'
 
 function EditProfile() {
-    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
     const navigate = useNavigate()
     const [profile, setProfile] = useState({
         name: '',
@@ -28,15 +27,8 @@ function EditProfile() {
                 return acc;
             }, {});
             const id = cookiesObject['user_id'] || '';
-            const method = profileExists ? 'PATCH' : 'POST'
-            const path = profileExists ? `${baseUrl}/users/${id}/user-profile` : `${baseUrl}/users/${id}`
-            const response = await fetch(path, {
-                method: method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(profile),
-            });
+        
+            const response = await updateUserProfile(profileExists, id, profile);
             const data = await response.json();
             console.log(data)
             if (response.ok) {
@@ -61,13 +53,7 @@ function EditProfile() {
                 }, {});
                 const token = cookiesObject['token'] || '';
                 const id = cookiesObject['user_id'] || '';
-                const response = await fetch(`${baseUrl}/users/${id}/user-profile`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
+                const response = await fetchUserProfile(id, token)
                 const data = await response.json();
                 if (response.ok) {
                     setProfile(data.data);
@@ -81,7 +67,7 @@ function EditProfile() {
             }
         };
         fetchProfile();
-    }, [baseUrl]);
+    }, []);
     return (
         <Container className='edit-profile-page'>
             <Form onSubmit={handleSubmit}>

@@ -4,6 +4,7 @@ import { triggerModalOpen } from '../modalState'
 import { useNavigate } from 'react-router-dom';
 import Select from 'react-select';
 import './MatchingService.css';
+import { fetchCategories } from '../models/questionModel';
 
 const MatchingService = ({ showModal, handleClose, ws }) => {
     const [difficulty, setDifficulty] = useState('');
@@ -19,7 +20,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
     const [isMatching, setIsMatching] = useState(false);
     const [timer, setTimer] = useState(0); // New state for timer
     const navigate = useNavigate();
-    const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+
     const service = 'matching'
     useEffect(() => {
         // Timer logic
@@ -59,9 +60,9 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         };
 
         // get question categories
-        const fetchCategories = async () => {
+        const getCategories = async () => {
             try {
-                const categoriesResponse = await fetch(`${baseUrl}/categories`);
+                const categoriesResponse = await fetchCategories();
                 if (!categoriesResponse.ok) {
                     throw new Error(`Error fetching categories: ${categoriesResponse.statusText}`);
                 }
@@ -85,7 +86,7 @@ const MatchingService = ({ showModal, handleClose, ws }) => {
         if (showModal)
         {
             fetchUserID();
-            fetchCategories();
+            getCategories();
         }
 
         if (!ws) return; // Exit if WebSocket is not available

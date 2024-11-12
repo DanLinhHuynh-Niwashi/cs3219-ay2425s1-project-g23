@@ -44,4 +44,4 @@ async function startServer() {
       console.log("Service started, but database connection failed.");
   });
 }
-startServer();
+await startServer();

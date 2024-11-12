@@ -2,24 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button, Form, Badge, Container, Row, Col } from 'react-bootstrap';
 import './Login.css';
+import { fetchUpdatePassword } from '../models/userModel';
 
 function ResetPassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const { token } = useParams();
   const navigate = useNavigate()
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (password != confirmPassword) {
       alert('Password do not match');
       return
     }
-    const response = await fetch(`${baseUrl}/users/update-password/update`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({password, token}),
-    });
+    const response = await fetchUpdatePassword(password, token);
     const result = await response.json();
     if (!response.ok) {
       alert(`Error: ${result.message}`);
