@@ -159,10 +159,12 @@ services:
       context: ./services/history-service
       args:
         - PORT=${HISTORY_PORT}
+        - QUESTION_PORT=${QUESTION_PORT}
     ports:
       - "${HISTORY_PORT}:${HISTORY_PORT}"
     environment:
       PORT: ${HISTORY_PORT}
+      QUESTION_PORT: ${QUESTION_PORT}
       DB_CLOUD_URI: ${HISTORY_DB_CLOUD_URI}
       DB_LOCAL_URI: ${HISTORY_DB_LOCAL_URI}
       ENV: ${ENV}
