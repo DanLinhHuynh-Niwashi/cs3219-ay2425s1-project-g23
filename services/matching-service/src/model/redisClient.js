@@ -15,7 +15,7 @@ export const subClient = createClient({
 export async function initializeRedis() {
     // Listen for connection events
     redisClient.on('connect', () => {
-        redisClient.flushAll();
+        // redisClient.flushAll();
         console.log(`Connected to Redis on redis://${HOST}:${PORT}`);
     });
 
