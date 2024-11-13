@@ -10,16 +10,17 @@
 ### Run
 - **Step 1:** Clone the repository.
 - **Step 2:** Setup the necessary .env files in the /frontend and root folder using the .env.sample templates in both folders. 
-    - The default ports are:
+    - Fill in the necessary information enclosed by curly brackets {}. 
+    - The default ports are given by defefault as:
         - GATEWAY_PORT=4000 
         - QUESTION_PORT=3001 
         - USER_PORT=3002 
         - MATCHING_PORT=8080 
         - COLLAB_PORT=8081 
         - HISTORY_PORT=8082 
-    - If setting custom ports:
-        - Avoid using port 3000, as the React app runs on that port.
-        - For instructions on using Kubernetes, refer to the `HPA-SETUP.md` file. You may have to edit additional files for custom ports to work.
+        - If setting custom ports:
+            - Avoid using port 3000, as the React app runs on that port.
+            - For instructions on using Kubernetes, refer to the `HPA-SETUP.md` file. You may have to edit additional files for custom ports to work.
 - **Step 3:** Run `docker --version` to check if docker is correctly installed. If not, ensure it is. 
 - **Step 4:** Run `docker-compose up --build -d ` command in terminal to build and run the app. 
 - **Step 5:** Go to http://localhost:3000 to see the application and services running. 
