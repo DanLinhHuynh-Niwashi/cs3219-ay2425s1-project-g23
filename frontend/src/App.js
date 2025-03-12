@@ -12,12 +12,13 @@ import MatchingService from './pages/MatchingService';
 import SessionSummaryPage from './pages/SessionSummaryPage'; // Adjust the path as necessary
 
 import { useModal } from './modalState'; // Import the custom modal hook
+import ResetPassword from './pages/ResetPassword';
 
 function App() {
   const { isModalOpen, closeModal } = useModal();
   const [ws, setWs] = useState(null);
   const intervalRef = useRef(null);
-  const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
+  const baseUrl = process.env.REACT_APP_MATCHING_URL || 'http://localhost:8080';
 
   useEffect(() => {
     const websocket = new WebSocket(baseUrl);
@@ -34,6 +35,9 @@ function App() {
 
     websocket.onmessage = (message) => {
       const data = JSON.parse(message.data);
+      if (message.event && message.event == 'connection-refuse') {
+        alert(message.message);
+      }
       console.log('Message from WebSocket:', data);
     };
 
@@ -64,6 +68,7 @@ function App() {
         <Route element={<RedirectRoutes />}>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/reset-password/:token" element={<ResetPassword/>} />
         </Route>
         {/* All routes wrapped in Layout */}
         <Route element={<ProtectedRoutes />}>

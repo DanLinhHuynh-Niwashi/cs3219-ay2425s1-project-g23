@@ -1,17 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Container, Card, Row, Col, Button } from 'react-bootstrap';
-import './SessionSummaryPage.css'; // Assuming you create a CSS file for additional styles
+import './SessionSummaryPage.css';
+import { fetchUserNameById } from '../models/userModel';
 
 const SessionSummaryPage = () => {
     const location = useLocation();
-    const navigate = useNavigate(); // Initialize the navigate function
-    const { sessionSummary } = location.state || {}; // Get the session summary from state
-    console.log(sessionSummary);
+    const navigate = useNavigate();
+    const { sessionSummary: initialSessionSummary } = location.state || {};
+    const [sessionSummary, setSessionSummary] = useState(initialSessionSummary);
+    console.log("Location state:", location.state);
+
+    useEffect(() => {
+        const fetchUsernames = async () => {
+            if (initialSessionSummary && initialSessionSummary.participants) {
+                console.log("Fetching usernames with initial session summary:", initialSessionSummary);
+        
+                const updatedParticipants = await Promise.all(
+                    initialSessionSummary.participants.map(async (participant) => {
+                        try {
+                            console.log(`Fetching username for userId ${participant.userId}`);
+                            const response = await fetchUserNameById(participant.userId);
+                            
+                            if (response.ok) {
+                                const responseData = await response.json();
+                                console.log(`Fetched username for userId ${participant.userId}:`, responseData.data.username);
+                                return {
+                                    ...participant,
+                                    username: responseData.data.username, 
+                                };
+                            } else {
+                                console.error(`Error fetching username for userId ${participant.userId}:`, response.statusText);
+                                return { ...participant, username: 'Unknown User' };
+                            }
+                        } catch (error) {
+                            console.error(`Error fetching username for userId ${participant.userId}:`, error);
+                            return { ...participant, username: 'Unknown User' };
+                        }
+                    })
+                );
+        
+                console.log("Updated participants with usernames:", updatedParticipants);
+                setSessionSummary((prevSummary) => ({
+                    ...prevSummary,
+                    participants: updatedParticipants,
+                }));
+            }
+        };
+        
+    
+        if (initialSessionSummary) {
+            fetchUsernames();
+        }
+    }, [initialSessionSummary]);
+    
 
     const handleReturnToQuestions = () => {
-        navigate('/questions'); // Navigate to the questions page
+        navigate('/questions');
     };
+
+    const formattedDate = sessionSummary?.dateTime
+    ? new Date(sessionSummary.dateTime).toLocaleString("en-GB", {
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hourCycle: "h23" // 24-hour format
+      })
+    : '';
 
     return (
         <Container className="mt-4">
@@ -23,17 +81,23 @@ const SessionSummaryPage = () => {
                             <Col>
                                 <Card.Title>Session ID: {sessionSummary.sessionId}</Card.Title>
                                 <Card.Text>
-                                <strong>Participants:</strong> {sessionSummary.participants.map(participant => participant.userId).join(', ')}
+                                    <strong>Participants:</strong>{' '}
+                                    {sessionSummary.participants.map((participant, index) => (
+                                        <span key={index}>
+                                            {participant.username || 'Unknown User'}
+                                            {index < sessionSummary.participants.length - 1 ? ', ' : ''}
+                                        </span>
+                                    ))}
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Duration:</strong> {sessionSummary.duration} seconds
+                                    <strong>Date Attempted:</strong> {formattedDate}
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Date:</strong> {sessionSummary.dateTime}
+                                    <strong>Duration of Attempt:</strong> {sessionSummary.duration} minutes
                                 </Card.Text>
                                 <Card.Text>
-                                    <strong>Summary Notes:</strong>
-                                    <p>{sessionSummary.summaryNotes}</p>
+                                    <strong>Attempted Code:</strong>
+                                    <p>{sessionSummary.attemptedCode}</p>
                                 </Card.Text>
                             </Col>
                         </Row>
@@ -56,5 +120,3 @@ const SessionSummaryPage = () => {
 };
 
 export default SessionSummaryPage;
-
-

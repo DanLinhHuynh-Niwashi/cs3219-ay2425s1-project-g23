@@ -1,15 +1,27 @@
 import express from "express";
-import cors from "cors";
+import fileUpload from 'express-fileupload';
 import cookieParser from "cookie-parser";
 import questionRoutes from './routes/question-routes.js';
 import userRoutes from './routes/user-routes.js';
 import collabRoutes from './routes/collab-routes.js';
+import rateLimit from 'express-rate-limit';
+import historyRoutes from "./routes/history-routes.js";
 
 const app = express();
+
+// Define rate limiter
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 15 minutes
+  max: 300, // Limit each IP to 100 requests per window
+  message: 'Too many requests from this IP, please try again',
+});
+
+app.use(limiter);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
+app.use(fileUpload());
 
 // CORS configuration for handling cookies
 app.use((req, res, next) => {
@@ -30,9 +42,10 @@ app.use((req, res, next) => {
 app.use('/api', questionRoutes);
 app.use('/api', userRoutes);
 app.use('/api', collabRoutes);
-
+app.use('/api', historyRoutes);
 app.get("/", (req, res, next) => {
     console.log("Sending Greetings!");
+    res.status(200);
     res.json({
       message: "Hello World from peerprep",
     });

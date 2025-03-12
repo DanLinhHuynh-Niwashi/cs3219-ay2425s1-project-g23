@@ -5,14 +5,23 @@ import './FilterPanel.css';
 
 const FilterPanel = ({ categories, onFilterChange }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [selectedComplexities, setSelectedComplexities] = useState([]);
+
+  // Hard-coded complexity options
+  const complexities = ["Easy", "Medium", "Hard"];
 
   useEffect(() => {
     const initialSelectedCategories = categories.map((category) => category.name); // Select all categories by name
     setSelectedCategories(initialSelectedCategories);
-    onFilterChange(initialSelectedCategories); // Trigger initial filter
+    setSelectedComplexities(complexities);
+    onFilterChange(initialSelectedCategories, selectedComplexities); // Trigger initial filter
   }, [categories]); // Removed onFilterChange from dependency array
 
-  const handleCheckboxChange = (categoryName, isChecked) => {
+  useEffect(() => {
+    onFilterChange(selectedCategories, selectedComplexities); // Trigger filter when categories or complexities change
+  }, [selectedCategories, selectedComplexities]); // Depend on both selectedCategories and selectedComplexities
+
+  const handleCategoryChange = (categoryName, isChecked) => {
     let updatedCategories = [...selectedCategories];
     if (isChecked) {
       updatedCategories.push(categoryName);
@@ -20,8 +29,19 @@ const FilterPanel = ({ categories, onFilterChange }) => {
       updatedCategories = updatedCategories.filter((name) => name !== categoryName);
     }
     setSelectedCategories(updatedCategories);
-    onFilterChange(updatedCategories); // Call onFilterChange only when the selected categories are updated
   };
+
+  const handleComplexityChange = (complexity, isChecked) => {
+    let updatedComplexities = [...selectedComplexities];
+    if (isChecked) {
+      updatedComplexities.push(complexity);
+    } else {
+      updatedComplexities = updatedComplexities.filter((name) => name !== complexity);
+    }
+    setSelectedComplexities(updatedComplexities);
+  };
+
+  
 
   return (
     <div className="filter-panel">
@@ -34,7 +54,21 @@ const FilterPanel = ({ categories, onFilterChange }) => {
             label={category.name}
             value={category.name}
             checked={selectedCategories.includes(category.name)}
-            onChange={(e) => handleCheckboxChange(category.name, e.target.checked)}
+            onChange={(e) => handleCategoryChange(category.name, e.target.checked)}
+          />
+        ))}
+      </Form>
+
+      <h5>Filter by Complexity</h5>
+      <Form>
+        {complexities.map((complexity, index) => (
+          <Form.Check
+            key={index}
+            type="checkbox"
+            label={complexity}
+            value={complexity}
+            checked={selectedComplexities.includes(complexity)}
+            onChange={(e) => handleComplexityChange(complexity, e.target.checked)}
           />
         ))}
       </Form>

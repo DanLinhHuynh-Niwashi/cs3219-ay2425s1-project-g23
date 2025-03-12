@@ -3,15 +3,63 @@ import Category from './category-model.js'; // Mongoose Category model
 import Question from './question-model.js'; // Mongoose Question model
 
 import { connect } from "mongoose";
+import mongoose from "mongoose";
+
+let retryCount = 0;
+const reconnectMaxRetries = 5; // Max retries for reconnection after disconnection
+const retryInterval = 5000; // Retry every 5 seconds
 
 export async function connectToDB() {
-  let mongoDBUri =
+  try {
+    let mongoDBUri =
     process.env.ENV === "PROD"
       ? process.env.DB_CLOUD_URI
       : process.env.DB_LOCAL_URI;
-  console.log("mongoDBUri:", mongoDBUri)
-  await connect(mongoDBUri);
-}
+    console.log("mongoDBUri:", mongoDBUri)
+    await connect(mongoDBUri);
+  } catch (error) {
+    console.error("Failed to connect to MongoDB:", error);
+    throw error; // Will be caught by startServer() in the main code
+  }
+};
+
+export const handleDBEvents = () => {
+  mongoose.connection.on('connected', () => {
+    console.log('MongoDB connected');
+    retryCount=0;
+  });
+
+  mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+    // If disconnected, try to reconnect
+    reconnectToDB();
+  });
+
+  mongoose.connection.on('reconnected', () => {
+    console.log('MongoDB reconnected');
+  });
+
+  mongoose.connection.on('error', (error) => {
+    console.error('MongoDB connection error:', error);
+    // If disconnected, try to reconnect
+    reconnectToDB();
+  });
+};
+
+const reconnectToDB = () => {
+  console.log("Attempting to reconnect to MongoDB...");
+  
+  setTimeout(() => {
+    if (retryCount==reconnectMaxRetries) {
+      process.exit(1);
+    }
+    retryCount++;
+    connectToDB().catch((err) => {
+      console.error("MongoDB reconnection failed:", err);
+      reconnectToDB(); // Retry reconnection
+    });
+  }, retryInterval); // Retry every 5 seconds
+};
 
 // Get all categories
 export async function findAllCategories() {
@@ -37,8 +85,9 @@ export async function findCategoryById(id) {
 // Create a new question
 export async function createQuestion(title, description, complexity, categories) {
   try {
+    const normalizedTitle = title.trim().replace(/\s+/g, ' ');
     const newQuestion = new Question({
-      title,
+      title: normalizedTitle,
       description,
       complexity,
       categories, // categories are an array of IDs
@@ -89,11 +138,12 @@ export async function findAllQuestions() {
 // Update a question by its ID
 export async function updateQuestionById(id, title, description, complexity, categories) {
   try {
+    const normalizedTitle = title.trim().replace(/\s+/g, ' ');
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
       {
         $set: {
-          title,
+          title: normalizedTitle,
           description,
           complexity,
           categories, 
@@ -124,16 +174,18 @@ export async function deleteQuestionById(id) {
 }
 
 // Check for duplicate question
-export async function checkDuplicateQuestion(title, description, id) {
+export async function checkDuplicateQuestion(title, id) {
   try {
+    const normalizedTitle = title.toLowerCase().trim().replace(/\s+/g, ' ');
     const existingQuestion = await Question.findOne({
-      title,
-      description,
+      $and: [
+        { title: { $regex: new RegExp(`^${normalizedTitle}$`, 'i') } },  // Case-insensitive regex for title
+      ]
     });
     if (id) {
-      return existingQuestion !== null && existingQuestion.id != id;
+      return existingQuestion !== null && existingQuestion.id != id? existingQuestion.id : null;
     }
-    return existingQuestion !== null;
+    return existingQuestion !== null? existingQuestion.id : null;
   } catch (error) {
     console.error('Error checking for duplicate question:', error);
     throw error;

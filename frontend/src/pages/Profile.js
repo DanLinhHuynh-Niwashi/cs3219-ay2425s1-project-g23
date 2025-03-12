@@ -6,6 +6,7 @@ import profileImage from '../img/default_profile.jpg';
 import SetUpProfile from '../components/SetUpProfile';
 
 import './Profile.css'
+import { fetchUserProfile } from '../models/userModel';
 
 function Profile() {
   const baseUrl = process.env.REACT_APP_GATEWAY_URL || 'http://localhost:4000/api';
@@ -34,13 +35,7 @@ function Profile() {
         if (token.length == 0 || id.length == 0) {
           throw new Error(`Did not retreive cookies invalid authentication`)
         }
-        const response = await fetch(`${baseUrl}/users/${id}/user-profile`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await fetchUserProfile(id, token);
         const data = await response.json();
         if (response.ok) {
           setProfile(data.data);

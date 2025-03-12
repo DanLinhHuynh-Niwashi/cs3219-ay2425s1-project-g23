@@ -1,26 +1,49 @@
 import { WebSocketServer } from 'ws';
 import index, { updateDBStatus } from "./index.js";
 import "dotenv/config";
-import { connectToDB } from "./model/repository.js";
+import { connectToDB, handleDBEvents } from "./model/repository.js";
 import http from "http";
 import { handleEndSession } from './controllers/websocket-collab-controller.js';
 
 
 const port = process.env.PORT || 8081;
 const server = http.createServer(index);
+let retries = 0;
+const maxRetries = 5; // Limit retries to avoid infinite loops
+const retryInterval = 5000; // 5 seconds interval between retries
+let serverStarted = false;
+async function startServer() {
+    await connectToDB().then(() => {
+      console.log("MongoDB Connected!");
+      handleDBEvents();
+      updateDBStatus(true);
+      if (!serverStarted) {
+        server.listen(port);
+        serverStarted = true;
+      }
+      console.log("Collab service server listening on http://localhost:" + port);
+    }).catch((err) => {
+      console.error("Failed to connect to DB");
+      console.error(err);
+      if (retries < maxRetries) {
+          retries++;
+          console.log(`Retrying... (${retries}/${maxRetries})`);
+          setTimeout(startServer, retryInterval); // Retry after 5 seconds
+          // Still start the server to handle requests
+          
+        } else {
+          console.error("Max retries reached. DB connection failed.");
+          process.exit(1);
+        }
+        if (!serverStarted) {
+          server.listen(port);
+          serverStarted = true;
+        }
+        console.log("Service started, but database connection failed.");
+    });
+}
 
-await connectToDB().then(() => {
-    console.log("MongoDB Connected!");
-    updateDBStatus(true);
-    server.listen(port);
-    console.log("Collab service server listening on http://localhost:" + port);
-}).catch((err) => {
-    console.error("Failed to connect to DB");
-    console.error(err);
-    server.listen(port);
-    console.log("Service started, but database connection failed.");
-});
-
+await startServer();
 // Create a WebSocket server
 const wss = new WebSocketServer({ server });
 // Create a Map to track sessions and their participants
@@ -32,11 +55,13 @@ wss.on('connection', (ws) => {
     let userId = null;
     let question = null;
     let sessionId = null;
+    let finalCode = null;
     // Handle incoming messages
     ws.on('message', (message) => {
         const data = JSON.parse(message);
         if (data.type === 'leaveSession') {
-            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+            finalCode = data.content;  // Capture the content
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId, finalCode);
         } else if (data.type === 'openSession') {
             sessionId = data.sessionId;
             userId = data.userId;
@@ -96,7 +121,7 @@ wss.on('connection', (ws) => {
         // Remove the client from the session participants
         const session = sessions.get(sessionId);
         if (session) {
-            handleEndSession(userId, sessionId, sessions, clients, session.questionId);
+            handleEndSession(userId, sessionId, sessions, clients, session.questionId, finalCode);
             session.participants.delete(userId)
             // Clean up participant data
             if (session.participants.size === 0) {
